@@ -17,7 +17,7 @@ spec:
         service: postgres
     spec:
       containers:
-        - name: postgres
+        - name: postgres  # main postgresql container
           image: postgres:9.6
           ports:
             - name: tcp
@@ -33,13 +33,13 @@ spec:
           volumeMounts:
             - mountPath: "/var/lib/postgresql/data"
               name: "postgres-pgdata"
-        - name: postgres-exporter
+        - name: postgres-exporter #prometheus contaainer for PostgreSQL exporter
           image: bitnami/postgres-exporter
           ports:
            - name: pg-exporter
              containerPort: 9187
           command: ["/bin/sh", "-c"]
-        - name: postgreslog
+        - name: postgreslog #busybox container for copying application logs to stdout
           image: busybox
           args: [/bin/sh, -c, 'tail -n+1 -F /var/log/postgres.log']
           volumeMounts:
