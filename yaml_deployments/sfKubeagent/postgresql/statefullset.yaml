@@ -1,81 +1,54 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "postgresql.fullname" . }}
+  name: postgresql-1600353338-postgresql
   labels:
-    {{- include "postgresql.labels" . | nindent 4 }}
+    helm.sh/chart: postgresql-0.1.0
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: postgresql-1600353338
+    app.kubernetes.io/version: "9.6"
+    app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      {{- include "postgresql.selectorLabels" . | nindent 6 }}
-  serviceName: {{ .Chart.Name }}
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/instance: postgresql-1600353338
+  serviceName: postgresql
   template:
     metadata:
-    {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
       labels:
-        {{- include "postgresql.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/instance: postgresql-1600353338
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "postgresql.serviceAccountName" . }}
+      serviceAccountName: default
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+        {}
       containers:
-        - name: postgres-general
-          image: busybox
-          command: ["/bin/sh", "-c"]
-          args: ["tail -n+1 -f /var/log/postgresql/postgres*.log"]
-          volumeMounts:
-            - name: postgres-log
-              mountPath: /var/log/postgresql
 
-        - name: postgres-sfagent
-          image: snappyflowml/sfagent:latest
-          imagePullPolicy: Always
-          command:
-            - /app/sfagent
-            - -config-file
-            - /app/config.yaml
-          env:
-            - name: APP_NAME
-              value: { sfappname }
-            - name: PROJECT_NAME
-              value: {sfprojectname }
-          volumeMounts:
-            - name: postgres-log
-              mountPath: /var/log/postgresql
-            - name: postgres-sfagent-config
-              mountPath: /app/config.yaml
-              subPath: config.yaml 
-
-        - name: {{ .Chart.Name }}
+        - name: postgresql
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+            {}
+          image: "postgres:9.6"
+          args: ["-c", "log_statement=all","-c","log_directory=/var/log/postgres","-c","log_line_prefix=< %m >","-c","log_filename=postgresql-%Y-%m-%d_%H%M%S.log","-c","log_truncate_on_rotation=off","-c","log_rotation_age=1d","-c","logging_collector=on"]
+          imagePullPolicy: IfNotPresent
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "postgresql.fullname" . }}
+                  name: postgresql-1600353338-postgresql
                   key: rootPassword
             - name: PG_MULTI_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "postgresql.fullname" . }}
+                  name: postgresql-1600353338-postgresql
                   key: multidbUserPassord
             - name: POSTGRES_USER
-              value: {{ .Values.rootUser }}
+              value: postgres
             - name: PG_MULTI_DB_USER
-              value: {{ .Values.multidbUser }}
+              value: data
             - name: PG_MULTI_DB
-              value: {{ .Values.multidb }}
+              value: db1;db2
             - name: PGDATA
               value: "/data/pgdata"
           ports:
@@ -100,43 +73,54 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
           volumeMounts:
+          - name: postgres-log
+            mountPath: /var/log/postgres
           - name: data
             mountPath: /data
             subPath: pgdata
-          {{- if .Values.initconfig }}
           - name: initconfig
             mountPath: /docker-entrypoint-initdb.d
-          {{- end }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+        - name: postgres-general
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args: ["tail -n+1 -f /var/log/postgres/postgres*.log"]
+          volumeMounts:
+            - name: postgres-log
+              mountPath: /var/log/postgres
+        - name: postgres-sfagent
+          image: snappyflowml/sfagent:latest
+          imagePullPolicy: Always
+          command:
+            - /app/sfagent
+            - -config-file
+            - /app/config.yaml
+          env:
+            - name: APP_NAME
+              value: "testapp"
+            - name: PROJECT_NAME
+              value: "testproject"
+          volumeMounts:
+            - name: postgres-log
+              mountPath: /var/log/postgres
+            - name: postgres-sfagent-config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
       volumes:
       - name: postgres-log
         emptyDir: {}
       - name: data
-      {{- if .Values.persistence.enabled }}
         persistentVolumeClaim:
-          claimName: {{ include "postgresql.fullname" . }}
-      {{- else }}
-        emptyDir: {}
-      {{- end }}
-      {{- if .Values.initconfig }}
+          claimName: postgresql-1600353338-postgresql
       - name: initconfig
         configMap:
-          name: {{ include "postgresql.fullname" . }}-init
-      {{- end }}
+          name: postgresql-1600353338-postgresql-init
       - name: postgres-sfagent-config
         configMap:
           name: postgres-sfagent-config
-      

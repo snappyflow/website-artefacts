@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgresql-1600344618
+  name: postgresql-1600353338
   labels:
     helm.sh/chart: postgresql-0.1.0
     app.kubernetes.io/name: postgresql
-    app.kubernetes.io/instance: postgresql-1600344618
+    app.kubernetes.io/instance: postgresql-1600353338
     app.kubernetes.io/version: "9.6"
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -15,10 +15,8 @@ spec:
       targetPort: tcp
       protocol: TCP
       name: tcp
-    - port: 9187
-      name: pg-exporter
 
   selector:
     app.kubernetes.io/name: postgresql
-    app.kubernetes.io/instance: postgresql-1600344618
+    app.kubernetes.io/instance: postgresql-1600353338
 

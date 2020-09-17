@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-1600344618-init
+  labels:
+    helm.sh/chart: postgresql-0.1.0
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: postgresql-1600344618
+    app.kubernetes.io/version: "9.6"
+    app.kubernetes.io/managed-by: Helm
+data:
+  create-multi-db.sh: |-
+    #!/bin/sh
+    set -e
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE USER $PG_MULTI_DB_USER WITH ENCRYPTED PASSWORD '$PG_MULTI_DB_PASSWORD';"
+    export IFS=";"
+    for db in $PG_MULTI_DB; do
+      psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "CREATE DATABASE $db;"
+      psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -c "GRANT ALL PRIVILEGES ON DATABASE $db TO $PG_MULTI_DB_USER;"
+    done
+
