@@ -25,7 +25,7 @@ spec:
       securityContext:
         {}
       containers:
-
+        # Postgres db application container that writes log to /var/log/postgres
         - name: postgresql
           securityContext:
             {}
@@ -87,6 +87,8 @@ spec:
             requests:
               cpu: 100m
               memory: 128Mi
+              
+        # Busybox container to forward logs from postgres logfile to stdout so that they are picked up for parsing by snappyflow central log parser.     
         - name: postgres-general
           image: busybox
           command: ["/bin/sh", "-c"]
@@ -94,6 +96,8 @@ spec:
           volumeMounts:
             - name: postgres-log
               mountPath: /var/log/postgres
+              
+        # Snappyflow's sfkubeagent container to monitor the postres application. It gets its input from postgres-sfagent-config.yaml      
         - name: postgres-sfagent
           image: snappyflowml/sfagent:latest
           imagePullPolicy: Always
