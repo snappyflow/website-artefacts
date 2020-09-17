@@ -21,7 +21,7 @@ data:
         - name: postgres-general
           enabled: true
           config:
-            log_path: /var/log/postgresql/postgres*.log
+            log_path: /var/log/postgres/postgres*.log
             log_level:
               - error
               - warning
