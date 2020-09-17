@@ -4,7 +4,7 @@ metadata:
   name: postgres-sfagent-config
 data:
   config.yaml: |-
-    key: "xaMuH8dZjICEuRaQCrgSml9hrliLut8o0AuoTLPxsjxWXvDLZie23NvPKMCAMoH21+A7bvu/1zisoZkB3+k1Q9IjdwG9L/kCkd+PPYPNJtBpOiYKptE07B1ZhhQp0z3ugoyb6Dow72q/Br/QxYwB6958Qru12DnPKX1M3LCJ/XoNY0gvRFCDZ+rA0wl98AyF5JcfAHNlAdaAbEbVVVcOhqjOyLiX5lq2ZOufGcmaYDiIfc07TvAcJxXh+0foDapycSxdho8AdYfsY84lam8D3dxDFByJBamAmCTRw1Lzv58+xyMomkF1jXevzhQKHp5wiYzoReEbn+1LEMW8GT0fmMI0CjhvWRkwxn1NsKb3kc759zSlzeBdF9ER+8EJz25l83O392ulbkHX1vXD//+t5A=="
+    key: "Paste the profile key from snappyflow "
     metrics:
         plugins:
         - name: postgres
