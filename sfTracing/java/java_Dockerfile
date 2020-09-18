@@ -1,0 +1,43 @@
+FROM jboss/base-jdk:8
+USER root
+
+#<SFTRACE_CONFIG>Add below two commands to copy the java agent jar to the container
+ADD https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz /tmp
+RUN mkdir /sfagent && tar -xvzf /tmp/sftrace-agent.tar.gz -C /sfagent && rm /tmp/sftrace-agent.tar.gz
+
+ENV JBOSS_VERSION jboss-eap-6.4.0
+ENV HOME /opt/
+ENV EAP_HOME $HOME/jboss-eap-6.4
+COPY $JBOSS_VERSION.zip /tmp/
+RUN yum install -y unzip \
+    && unzip /tmp/$JBOSS_VERSION.zip -d $HOME \
+    && export EAP_HOME=$EAP_HOME \
+    && $EAP_HOME/bin/add-user.sh admin welcome1! --silent
+
+#<SFTRACE_CONFIG>Add the below environment variables that will be used by trace agent
+#<SFTRACE_CONFIG> Replace <profile_key> with actual profile key. Profile key can be got from SF-APM UI: Manage-Profiles-Copykey corresponding toy our profile
+ENV SFTRACE_PROFILE_KEY <profile_key>
+# <SFTRACE-CONFIG> replace <service_name> with appropriate service name. service_name is used to identify and filter the traces related to an application and should be named appropriately to distinctly identify it.  Service name must only contain characters from the ASCII alphabet, numbers, dashes, underscores and spaces.
+ENV SFTRACE_SERVICE_NAME <service_name>
+#<SFTRACE_CONFIG> Replace <project name> and <app name> with the values configured in SnappyFlow-APM UI to which this trace is associated.
+ENV SFTRACE_PROJECT_NAME <project_name>
+ENV SFTRACE_APP_NAME <app_name>
+ENV SFTRACE_AGENT -javaagent:/sfagent/sftrace/java/sftrace-java-agent.jar
+# <SFTRACE-CONFIG>Below environment variables are only applicable for spring boot applications and optional. More information available in the documentation. #Refer to HTTPConfiguration Options before setting these properties
+ENV ELASTIC_APM_DISABLE_INSTRUMENTATIONS spring-mvc
+ENV ELASTIC_APM_USE_PATH_AS_TRANSACTION_NAME true
+#Replace <normalized urls> with appropriate urls. Transactions can be filtered by normalized url in SnappyFlow-APM UI
+ENV ELASTIC_APM_URL_GROUPS <normalized urls>
+
+
+EXPOSE 8080
+
+WORKDIR $EAP_HOME/bin
+
+#SFTRACE-CONFIG Add the below line for JBOSS standalone Dockerfile to add javaagent to JVM config. For tomcat, setenv.sh should be updated with system properties as mentioned in sfTrace setup for Apache Tomcat
+RUN echo export JAVA_OPTS=\""$"JAVA_OPTS -javaagent:/sfagent/sftrace/java/sftrace-java-agent.jar\" >> standalone.conf
+
+#SFTRACE_CONFIG If starting the container with CMD java -jar <jar file>, then add the below line
+CMD java $SFTRACE_AGENT <rest of your application specific arguments>
+
+ENTRYPOINT ["./standalone.sh", "-b", "0.0.0.0"]
