@@ -1,0 +1,101 @@
+---
+# Configure 'Deployment' of spring boot server.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "provisioner.fullname" . }}-worker
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: worker
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "provisioner.name" . }}
+      chart: {{ include "provisioner.chart" . }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+      {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+      snappyflow/component: worker
+  template:
+    metadata:
+      labels:
+        app: {{ include "provisioner.name" . }}
+        chart: {{ include "provisioner.chart" . }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+        {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+        snappyflow/component: worker
+    spec:
+      initContainers:
+#<SFTRACE-CONFIG>add the below init container. This copies the java agent jar to /sfagent volume mount
+      - name: sftrace-java-agent
+        image: busybox
+        command:
+        - sh
+        - -c
+        - -x
+        - wget -O /sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
+        volumeMounts:
+        - mountPath: /sfagent
+          name: sftrace-agent
+      containers:
+        - name: {{ .Chart.Name }}-worker
+          image: {{ .Values.worker.image.repository }}:{{.Values.worker.image.tag}}              # spring boot application image
+# <SFTRACE-CONFIG>add the below command. After java $(SFTRACE_AGENT), add application specific command to start the container. Basically, we are adding -javaagent option to the original command to start the java application
+          command:
+          - sh
+          - -c
+          - java $(SFTRACE_AGENT) <application specific commands>
+
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          ports:
+            - containerPort: 8083
+          volumeMounts:
+            - name: config-file-worker
+              mountPath: /config/application.properties
+              subPath: application.properties
+# <SFTRACE-CONFIG>add the below volume mount. This is the location where the java agent is copied through initContainer
+            - mountPath: /sfagent
+              name: sftrace-agent
+
+      ############################### environment variable ###############################
+          env:
+# <SFTRACE-CONFIG>add the below environment variables that will be used by the java agent
+          - name: SFTRACE_PROFILE_KEY
+            value: {{ .Values.global.key }}
+          - name: SFTRACE_SERVICE_NAME
+# <SFTRACE-CONFIG> replace <service_name> with appropriate service name. service_name is used to identify and filter the traces related to an application and should be named appropriately to distinctly identify it.  Service name must only contain characters from the ASCII alphabet, numbers, dashes, underscores and spaces.
+            value: <service_name>
+          - name: SFTRACE_PROJECT_NAME
+            value: {{ .Values.global.sfprojectname }}
+          - name: SFTRACE_APP_NAME
+            value: {{ .Values.global.sfappname }}
+          - name: SFTRACE_AGENT
+            value: -javaagent:/sfagent/sftrace/java/sftrace-java-agent.jar
+# <SFTRACE-CONFIG>the below environment variables are only applicable for springmvc and optional. More information available in the documentation. Refere to HTTPCOnfiguration Options
+          - name: ELASTIC_APM_DISABLE_INSTRUMENTATIONS
+            value: spring-mvc
+          - name: ELASTIC_APM_USE_PATH_AS_TRANSACTION_NAME
+            value: "true"
+#Replace <normalized urls> with appropriate urls. Transactions can be filtered by normalized url in SnappyFlow-APM UI
+          - name: ELASTIC_APM_URL_GROUPS
+            value: <normalized_urls>
+
+
+      #####################################################################################
+      volumes:
+        - name: config-file-worker
+          configMap:
+            name: worker-application-properties
+ # <SFTRACE-CONFIG> add the below volume
+        - name: sftrace-agent
+          emptyDir: {}
