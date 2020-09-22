@@ -1,0 +1,88 @@
+---
+# Configure 'Deployment' of nodejs application.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "manager.fullname" . }}-manager
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "manager.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: manager
+spec:
+  replicas: {{ .Values.manager.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "provisioner.name" . }}
+      chart: {{ include "provisioner.chart" . }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+      {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+      snappyflow/component: manager
+  template:
+    metadata:
+      labels:
+        app: {{ include "provisioner.name" . }}
+        chart: {{ include "provisioner.chart" . }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+        {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+        snappyflow/component: manager
+    spec:
+      initContainers:
+#<SFTRACE-CONFIG>add the below init container. This copies the trace agent jar to /sfagent volume mount
+      - name: nodejsagent
+        image: busybox
+        command:
+        - sh
+        - -c
+        - -x
+        - wget -O /sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
+        volumeMounts:
+        - mountPath: /sfagent
+          name: sftrace-agent
+      containers:
+        - name: {{ .Chart.Name }}-manager
+          image: {{ .Values.manager.image.repository }}:{{.Values.manager.image.tag}}           
+# <SFTRACE-CONFIG>add the below "command" to start the application from trace agent binary
+          command:
+          - sh
+          - -c
+          - /agent/sftrace --sfcmd="<original command to start the application>"
+# <SFTRACE-CONFIG>: example: - /agent/sftrace --sfcmd="node app.js"
+
+          imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
+          ports:
+            - containerPort: 8083
+          volumeMounts:
+            - name: config-file-manager
+              mountPath: /config/application.properties
+              subPath: application.properties
+# <SFTRACE-CONFIG>add the below volume mount. This is the location where the trace agent is copied through initContainer
+            - mountPath: /sfagent
+              name: sftrace-agent
+
+      ############################### environment variable ###############################
+          env:
+# <SFTRACE-CONFIG>add the below environment variables that will be used by the trace agent
+          - name: SFTRACE_PROFILE_KEY
+            value: {{ .Values.global.key }}
+          - name: SFTRACE_PROJECT_NAME
+            value: {{ .Values.global.sfprojectname }}
+          - name: SFTRACE_APP_NAME
+            value: {{ .Values.global.sfappname }}
+
+      #####################################################################################
+      volumes:
+        - name: config-file-manager
+          configMap:
+            name: manager-application-properties
+ # <SFTRACE-CONFIG> add the below volume
+        - name: sftrace-agent
+          emptyDir: {}
