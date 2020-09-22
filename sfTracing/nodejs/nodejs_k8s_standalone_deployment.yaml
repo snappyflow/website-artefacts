@@ -1,0 +1,53 @@
+---
+# Configure 'Deployment' of nodejs app.
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  selector:
+  template:
+    spec:
+      initContainers:
+#<SFTRACE-CONFIG>add the below init container. This copies the nodejs agent jar to /sfagent volume mount
+      - name: nodejsagent
+        image: busybox
+        command:
+        - sh
+        - -c
+        - -x
+        - wget -O /sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
+        volumeMounts:
+        - mountPath: /sfagent
+          name: sftrace-agent
+      containers:
+        - name: sample-nodejs-app
+          image: image/nodejs-app:latest
+# <SFTRACE-CONFIG>add the below "command" to start the application from trace agent binary
+          command:
+          - sh
+          - -c
+          - /agent/sftrace --sfcmd="<original command to start the application>"
+# <SFTRACE-CONFIG>: example: - /agent/sftrace --sfcmd="node app.js"
+          volumeMounts:
+            - name: config-file-worker
+              mountPath: /config/application.properties
+              subPath: application.properties
+# <SFTRACE-CONFIG>add the below volume mount. This is the location where the trace agent is copied through initContainer
+            - mountPath: /sfagent
+              name: sftrace-agent
+
+      ############################### environment variable ###############################
+          env:
+# <SFTRACE-CONFIG>add the below environment variables that will be used by the trace agent
+          - name: SFTRACE_PROFILE_KEY
+            value: <profile_key>
+#<SFTRACE_CONFIG> Replace <project name> and <app name> with the values configured in SnappyFlow-APM UI to which this trace is associated.
+          - name: SFTRACE_PROJECT_NAME
+            value: <project_name>
+          - name: SFTRACE_APP_NAME
+            value: <app_name>
+
+      #####################################################################################
+      volumes:
+ # <SFTRACE-CONFIG> add the below volume
+        - name: sftrace-agent
+          emptyDir: {}
