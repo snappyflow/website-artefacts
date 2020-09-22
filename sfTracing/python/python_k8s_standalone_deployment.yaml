@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       initContainers:
-#<SFTRACE-CONFIG>add the below init container. This copies the java agent jar to /sfagent volume mount
+#<SFTRACE-CONFIG>add the below init container. This copies the python agent jar to /sfagent volume mount
       - name: pythonagent
         image: busybox
         command:
