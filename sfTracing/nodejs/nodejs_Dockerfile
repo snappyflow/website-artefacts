@@ -1,0 +1,28 @@
+FROM node:13-alpine
+RUN mkdir /app
+
+#<SFTRACE-CONFIG> Add below 2 lines to copy the agent binary
+ADD https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz /tmp
+RUN mkdir /sfagent && tar -xvzf /tmp/sftrace-agent.tar.gz -C /sfagent && rm /tmp/sftrace-agent.tar.gz
+
+#<SFTRACE-CONFIG>Add the below environment variables that will be used by trace agent
+#<SFTRACE-CONFIG> Replace <profile_key> with actual profile key. Profile key can be got from SF-APM UI: Manage-Profiles-Copykey corresponding to your profile
+ENV SFTRACE_PROFILE_KEY <profile_key>
+#<SFTRACE-CONFIG> Replace <project name> and <app name> with the values configured in SnappyFlow-APM UI to which this trace is associated.
+ENV SFTRACE_PROJECT_NAME <project_name>
+ENV SFTRACE_APP_NAME <app_name>
+
+
+ADD . /app
+# We specify that we now wish to execute
+# any further commands inside our /app
+# directory
+WORKDIR /app
+# Our start command which kicks off
+RUN npm install express
+RUN npm install elastic-apm-node
+EXPOSE 3000
+
+#<SFTRACE-CONFIG>Modify the CMD as below to start the nodejs application using sftrace binary
+CMD sftrace --sfcmd="<original command>"
+#<SFTRACE-CONFIG> example: CMD ./sftrace --sfcmd="node app.js"
