@@ -1,7 +1,7 @@
 # website-artefacts
 Art is a diverse range of human activities involving the creation of visual, auditory or performing artifacts, which express the creator's imagination, conceptual ideas, or technical skill, intended to be appreciated primarily for their beauty or emotional power. 
 
-#5 AMAZING FACTS ABOUT ART 
+# 5 AMAZING FACTS ABOUT ART 
 
 1. Art used to be an Olympic event
 The Olympics wasn’t always about abs and doping scandals. The founder of the modern Games, the Baron Pierre de Coubertin, was enamoured with the idea of the true Olympian being a talented artist and sportsperson. Thanks to him, between 1912 and 1948 medals were given out for sporting-inspired masterpieces of architecture, music, painting, sculpture and literature.
