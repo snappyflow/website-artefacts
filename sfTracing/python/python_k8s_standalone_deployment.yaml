@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       initContainers:
-#<SFTRACE-CONFIG>add the below init container. This copies the python agent jar to /sfagent volume mount
+#<SFTRACE-CONFIG>add the below init container. This copies the sftrace agent to /sfagent volume mount
       - name: pythonagent
         image: busybox
         command:
@@ -25,13 +25,13 @@ spec:
           command:
           - sh
           - -c
-          - /agent/sftrace --sfcmd="<original command to start the application>"
-# <SFTRACE-CONFIG>: example: - /agent/sftrace --sfcmd="gunicorn snappyflow.wsgi:application"
+          - /sfagent/sftrace/sftrace --sfcmd="<original command to start the application>"
+# <SFTRACE-CONFIG>: example: - /sfagent/sftrace/sftrace --sfcmd="gunicorn snappyflow.wsgi:application"
           volumeMounts:
             - name: config-file-worker
               mountPath: /config/application.properties
               subPath: application.properties
-# <SFTRACE-CONFIG>add the below volume mount. This is the location where the trace agent is copied through initContainer
+# <SFTRACE-CONFIG>add the below volumemount. This is the location where the trace agent is copied through initContainer
             - mountPath: /sfagent
               name: sftrace-agent
 

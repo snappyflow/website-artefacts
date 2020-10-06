@@ -36,7 +36,7 @@ spec:
         snappyflow/component: manager
     spec:
       initContainers:
-#<SFTRACE-CONFIG>add the below init container. This copies the trace agent jar to /sfagent volume mount
+#<SFTRACE-CONFIG>add the below init container. This copies the sftrace agent to /sfagent volume mount
       - name: pythonagent
         image: busybox
         command:
@@ -54,8 +54,8 @@ spec:
           command:
           - sh
           - -c
-          - /agent/sftrace --sfcmd="<original command to start the application>"
-# <SFTRACE-CONFIG>: example: - /agent/sftrace --sfcmd="gunicorn snappyflow.wsgi:application"
+          - /sfagent/sftrace/sftrace --sfcmd="<original command to start the application>"
+# <SFTRACE-CONFIG>: example: - /sfagent/sftrace/sftrace --sfcmd="gunicorn snappyflow.wsgi:application"
 
           imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
           ports:
