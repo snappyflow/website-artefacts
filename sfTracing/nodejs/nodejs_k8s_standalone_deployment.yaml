@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       initContainers:
-#<SFTRACE-CONFIG>add the below init container. This copies the nodejs agent jar to /sfagent volume mount
+#<SFTRACE-CONFIG>add the below init container. This copies the sftrace agent to /sfagent volume mount
       - name: nodejsagent
         image: busybox
         command:
@@ -25,8 +25,8 @@ spec:
           command:
           - sh
           - -c
-          - /agent/sftrace --sfcmd="<original command to start the application>"
-# <SFTRACE-CONFIG>: example: - /agent/sftrace --sfcmd="node app.js"
+          - /sfagent/sftrace/sftrace --sfcmd="<original command to start the application>"
+# <SFTRACE-CONFIG>: example: - /sfagent/sftrace/sftrace --sfcmd="node app.js"
           volumeMounts:
             - name: config-file-worker
               mountPath: /config/application.properties
