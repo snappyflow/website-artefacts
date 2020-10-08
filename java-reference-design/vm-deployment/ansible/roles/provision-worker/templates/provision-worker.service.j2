@@ -1,0 +1,20 @@
+[Unit]
+Description= Provision Worker Application
+Requires=network-online.target
+After=network.target multi-user.target
+
+[Service]
+WorkingDirectory=/etc/init.d/
+User=root
+Group=root
+Type=simple
+ExecStart=/bin/bash /etc/init.d/provision-worker start
+ExecStop=/bin/bash /etc/init.d/provision-worker stop
+PIDFile=/tmp/provision-worker.pid
+
+TimeoutSec=300
+RestartSec=15
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

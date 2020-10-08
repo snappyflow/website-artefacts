@@ -1,0 +1,91 @@
+<h3 class="text-center mb-3">Task Status Counter</h3>
+
+<hr />
+
+<div class="text-center mb-4">
+  <button data-toggle="modal" data-target="#resetAllCountersModal" class="btn btn-secondary">Reset All Counters <i class="fas fa-eraser"></i></button>
+</div>
+
+<div class="container pb-5">
+  <div class="row vcenter justify-content-center">
+    <div class="col-lg-4 py-1">
+      <!-- <img src="https://img.icons8.com/dusk/300/000000/counter.png" class="img-fluid" /> -->
+      <div class="card card-body light-blue text-dark">
+        <p class="lead text-center font-weight-bold">SUMMARY</p>
+        <p class="lead"><span class="font-weight-bold">Total : </span>{{ summary.total }}</p>
+        <p class="lead"><span class="font-weight-bold">In Progress : </span>{{ summary.in_progress }}</p>
+        <p class="lead"><span class="font-weight-bold">Completed : </span>{{ summary.completed }}</p>
+        <p class="lead"><span class="font-weight-bold">Failed : </span>{{ summary.failed }}</p>
+        <p class="lead"><span class="font-weight-bold">Worker IDs : </span>{{ summary.worker_ids }}</p>
+      </div>
+    </div>
+    <div class="col-lg-8 py-1">
+      <div class="table-responsive shadow">
+        <table class="table table-sm table-bordered table-striped table-hover bg-light mb-0">
+          <thead class="text-center">
+            <tr>
+              <th>Worker ID</th>
+              <th>Total</th>
+              <th>In Progress</th>
+              <th>Completed</th>
+              <th>Failed</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody class="hide-scrollbar">
+            <tr  class="text-center" *ngFor="let item of counters | async">
+              <td>{{ item.id }}</td>
+              <td>{{ item.total }}</td>
+              <td>{{ item.in_progress }}</td>
+              <td>{{ item.completed }}</td>
+              <td>{{ item.failed }}</td>
+              <td>
+                <i (click)="reset(item.id)" class="fas fa-eraser px-2 text-secondary pointer" data-toggle="modal" data-target="#resetCounterModal"></i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Counter Modal -->
+<div class="modal fade" id="resetCounterModal" tabindex="-1" role="dialog" aria-labelledby="resetCounterModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+    <div class="modal-content">
+      <div class="modal-body text-center">
+          <img src="https://img.icons8.com/color/60/000000/erase.png" class="img-fluid"/>
+          <p class="text-center mt-3">Are you sure to reset the counter for Worker ID : {{ resetId }}?</p>
+      </div>
+      <div class="modal-footer">
+        <div class="container">
+          <div class="text-center">
+            <button type="button" class="btn btn-secondary mr-3" data-dismiss="modal">No <i class="fas fa-times-circle"></i></button>
+            <button (click)="resetCounter(resetId)" type="button" class="btn btn-info" data-dismiss="modal">Yes <i class="fas fa-check-circle"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset All Counters Modal -->
+<div class="modal fade" id="resetAllCountersModal" tabindex="-1" role="dialog" aria-labelledby="resetAllCountersModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+    <div class="modal-content">
+      <div class="modal-body text-center">
+          <img src="https://img.icons8.com/color/60/000000/erase.png" class="img-fluid"/>
+          <p class="text-center mt-3">Are you sure to reset all the counters?</p>
+      </div>
+      <div class="modal-footer">
+        <div class="container">
+          <div class="text-center">
+            <button type="button" class="btn btn-secondary mr-3" data-dismiss="modal">No <i class="fas fa-times-circle"></i></button>
+            <button (click)="resetAll()" type="button" class="btn btn-info" data-dismiss="modal">Yes <i class="fas fa-check-circle"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

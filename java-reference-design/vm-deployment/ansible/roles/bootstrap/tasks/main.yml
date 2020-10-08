@@ -1,0 +1,40 @@
+---
+- name: install python on ubuntu
+  raw: test -e /usr/bin/python || (sudo apt -y update && sudo apt install -y python-minimal)
+  register: task_result
+  until: task_result.rc == 0
+  retries: 5
+  delay: 30
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Update APT package manager repositories cache
+  command: apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 901F9177AB97ACBE
+  become: yes
+  when: ansible_distribution == 'Ubuntu'
+
+- name: install python on centos
+  raw: test -e /usr/bin/python || (sudo yum install -y python)
+  register: task_result
+  until: task_result.rc == 0
+  retries: 5
+  delay: 30
+  when: ansible_distribution == 'CentOS' or
+        ansible_distribution == 'Red Hat Enterprise Linux' or
+        ansible_distribution == 'RedHat'
+
+- name: check to see if pip is already installed
+  raw: "pip --version"
+  ignore_errors: true
+  register: pip_is_installed
+  changed_when: false
+  become: yes
+
+- block:
+    - name: download get-pip.py
+      get_url: url=https://bootstrap.pypa.io/get-pip.py  dest=/tmp
+    - name: install pip
+      raw: "python /tmp/get-pip.py"
+      become: yes
+    - name: delete get-pip.py
+      file: state=absent path=/tmp/get-pip.py
+  when: pip_is_installed.rc != 0

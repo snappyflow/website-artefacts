@@ -1,0 +1,25 @@
+---
+- name: Install git on Ubuntu
+  apt:
+    name: git
+    state: present
+    update_cache: yes
+  when: ansible_distribution == 'Ubuntu'
+
+# install git on centos: sudo yum install git
+- name: Install git on CentOS
+  yum:
+    name: git
+    state: present
+  when: ansible_distribution == 'CentOS' or
+        ansible_distribution == 'Red Hat Enterprise Linux' or
+        ansible_distribution == 'RedHat'
+
+- name: Clone the code repository
+  git:
+    repo: "git@github.com:pramurthy/javasamples.git"
+    dest: "{{ playbook_dir }}/../javasamples"
+    update: yes
+    accept_hostkey: yes
+    key_file: "{{ playbook_dir}}/keys/id_rsa"
+  become: yes

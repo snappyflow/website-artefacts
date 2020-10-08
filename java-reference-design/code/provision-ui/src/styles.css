@@ -1,0 +1,29 @@
+body { background: linear-gradient(to right, #ffeeee, #ddefbb); }
+
+/* User Defined */
+.vcenter { display: flex; align-items: center; }
+.light-blue { background-color: #c0dfd9; }
+.pointer { cursor: pointer; }
+
+/* Table : Fixed Header */
+tbody { display: block; height: 20rem; overflow: auto; }
+thead, tbody tr { display: table; width: 100%; table-layout: fixed; }
+tbody td { border: 1px solid #e0dede; }
+
+th, td {
+  vertical-align: middle !important;
+}
+
+/* Hide Scroll Bar */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Footer */
+footer p { font-size: 0.8rem !important; }
+
+/* Media Queries */
+@media (max-width: 768px) {
+  h3 { font-size: 1.3em !important; }
+  h4 { font-size: 1.2em !important; text-align: center; }
+  tbody { display: block; height: 18rem; overflow: auto; }
+}

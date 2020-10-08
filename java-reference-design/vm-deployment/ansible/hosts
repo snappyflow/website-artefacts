@@ -1,0 +1,23 @@
+[all]
+127.0.0.1 ansible_connection=local
+
+[all:vars]
+mysql_password = root                    # mysql root user password
+jmeter_continous_load_generater = False  #set value 'True' if you want continous load with JMeter
+#ansible_distro = Ubuntu
+#ansible_distro_version = 18.04
+
+[zookeeper]
+127.0.0.1 ansible_connection=local
+
+[mysql]
+127.0.0.1 ansible_connection=local
+
+[manager]
+127.0.0.1 ansible_connection=local
+
+[worker]
+127.0.0.1 ansible_connection=local
+
+[jmeter]
+127.0.0.1 ansible_connection=local

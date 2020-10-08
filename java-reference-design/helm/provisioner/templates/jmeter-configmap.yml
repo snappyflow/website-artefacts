@@ -1,0 +1,19 @@
+{{- if .Values.jmeter.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "provisioner.fullname" . }}-scripts
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+      app: {{ include "provisioner.name" . }} 
+      chart: {{ include "provisioner.chart" . }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+      {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+      snappyflow/component: jmeter
+data:
+{{ (.Files.Glob "scripts/test_plan.jmx").AsConfig | indent 2 }}
+{{- end }}
+        
+    

@@ -1,0 +1,66 @@
+---
+- name: Add the user 'kafka' to group of 'sudo'
+  user: name=kafka
+        state=present
+        groups="sudo"
+        password='$6$wtE/SVbSB3q$u8qhGzXNsW4eJlGJ2XelZSiLHGKZlDtjAleZihTqDya3CpWoK2WhtVdQs.uRmDoiakwiTOX6nhmLcVAF4xHLa.'
+        comment="Comment"
+  when: ansible_distribution == 'Ubuntu'
+
+- name: Add the user 'kafka' to group of 'wheel'
+  user: name=kafka
+        state=present
+        groups="wheel"
+        password='$6$wtE/SVbSB3q$u8qhGzXNsW4eJlGJ2XelZSiLHGKZlDtjAleZihTqDya3CpWoK2WhtVdQs.uRmDoiakwiTOX6nhmLcVAF4xHLa.'
+  when: ansible_distribution == 'CentOS' or
+        ansible_distribution == 'Red Hat Enterprise Linux' or
+        ansible_distribution == 'RedHat'
+
+- name: create Downloads directory
+  become: yes
+  file:
+    path: /home/kafka/Downloads
+    state: directory
+    mode: 0755
+
+- name: download Kafka binaries
+  get_url:
+    url: https://downloads.apache.org/kafka/2.5.1/kafka_2.12-2.5.1.tgz
+    dest: /home/kafka/Downloads/kafka.tgz
+
+- name: create working directory
+  become: yes
+  file:
+    path: /home/kafka/kafka
+    state: directory
+    mode: 0755
+    recurse: yes
+
+- name: Extract kafka into working directory
+  shell: cd /home/kafka/kafka && tar -xvzf /home/kafka/Downloads/kafka.tgz --strip 1
+#  unarchive:
+#    src: /home/kafka/Downloads/kafka.tgz
+#    dest: /home/kafka/kafka
+#    mode: 0755
+#    extra_opts: ['--strip 1']
+
+- name: Change permissions
+  become: yes
+  shell: chmod -R 777 /home/kafka/kafka
+
+- name: install zookeeper systemd unit file
+  template:
+    src: zookeeper.service.j2
+    dest: "/etc/systemd/system/zookeeper.service"
+
+- name: install kafka systemd unit file
+  template:
+    src: kafka.service.j2
+    dest: "/etc/systemd/system/kafka.service"
+
+- name: start Kafka
+  systemd:
+    state: started
+    name: kafka
+    enabled: yes
+#  shell: sudo systemctl start kafka

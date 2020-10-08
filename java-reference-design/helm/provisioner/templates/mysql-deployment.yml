@@ -1,0 +1,79 @@
+---
+# Configure 'Deployment' of mysql server.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "provisioner.fullname" . }}-mysql
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: mysql
+    tier: database
+spec:
+  replicas: {{ .Values.mysql.replicaCount }}
+  selector:                                   # mysql Pod Should contain same labels
+    matchLabels:
+      app: mysql
+      chart: {{ include "provisioner.chart" . }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+      {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+      snappyflow/component: mysql
+      tier: database
+  strategy:
+    type: {{ .Values.mysql.strategy.type }}   # when container crashes, K8s will recreate the Pod
+  template:
+    metadata:
+      labels:                                 
+        app: mysql
+        chart: {{ include "provisioner.chart" . }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+        {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+        snappyflow/component: mysql
+        tier: database
+    spec:
+      containers:
+        - name: mysql
+          image: {{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          args:
+            - "--ignore-db-dir=lost+found"    # workaround for https://github.com/docker-library/mysql/issues/186
+          env:
+            - name: MYSQL_ROOT_PASSWORD       # setting Root Password of mysql From a 'Secret'
+              valueFrom:
+                secretKeyRef:
+                  name: db-admin              # name of the 'Secret'
+                  key: password               # 'key' inside the Secret which contains required 'value'
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:                       # mounting volume obtained from Persistent Volume Claim
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql       # this is the path in the container on which the mounting will take place
+            - name: mysql-config-file
+              mountPath: /etc/mysql/conf.d
+            - name: varlog
+              mountPath: /var/log/mysql/
+        - name: mysqllog
+          image: busybox
+          args: [/bin/sh, -c, 'tail -n+1 -F  /var/log/mysql/mysql-*.log']
+          volumeMounts:
+          - name: varlog
+            mountPath:  /var/log/mysql/
+      volumes:
+        - name: mysql-persistent-storage      # obtaining 'volume' from PVC
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim         # name should match with the PVC name
+        - name: mysql-config-file
+          configMap:
+            name: {{ include "provisioner.fullname" . }}-mysql-config
+        - name: varlog
+          emptyDir: {}

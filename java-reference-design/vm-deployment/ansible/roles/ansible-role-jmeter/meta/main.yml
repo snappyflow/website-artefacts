@@ -1,0 +1,34 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: Alban Andrieu
+  description: A role for installing jmeter
+  company: Nabla
+  license: GPLv3
+  min_ansible_version: 2.6.0
+  platforms:
+    - name: EL
+      versions:
+        - 6
+    - name: Fedora
+      versions:
+        - 20
+    - name: Ubuntu
+      versions:
+        - all
+        - lucid
+        - maverick
+        - natty
+        - oneiric
+        - precise
+        - quantal
+        - raring
+        - saucy
+        - trusty        
+    - name: Debian
+      versions:
+        - all
+        - wheezy
+  galaxy_tags:
+    - development

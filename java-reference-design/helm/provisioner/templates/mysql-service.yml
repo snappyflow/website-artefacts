@@ -1,0 +1,30 @@
+# Define a 'Service' To Expose mysql to Other Services.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "provisioner.fullname" . }}-mysql-service                                 # DNS name
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: mysql
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: mysql
+    tier: database
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:                                   # mysql Pod Should contain same labels
+    app: mysql
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: mysql
+    tier: database
+  clusterIP: None                             # we Use DNS, Thus ClusterIP is not relevant

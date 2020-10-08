@@ -1,0 +1,56 @@
+- hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - validation
+    - bootstrap
+    - ansible-role-java
+  vars_files:
+    - default_vars.yml
+  vars:
+    os_distro: "{{ ansible_distro }}"
+
+# MySQL configuration
+- hosts: mysql
+  become: yes
+  roles:
+    - ansible-role-mysql
+  vars:
+    mysql_user_password: "{{ mysql_password }}"
+
+# Kafka and zookeeper configuration
+- hosts: zookeeper
+  become: yes
+  roles:
+    - kafka-zookeeper
+  vars:
+      os_distro: "{{ ansible_distro }}"
+
+# Manager startup
+- hosts: manager
+  become: yes
+  vars_files:
+    - default_vars.yml
+  vars:
+    os_distro: "{{ ansible_distro }}"
+  roles:
+    - provision-manager
+
+# Worker startup
+- hosts: worker
+  become: yes
+  vars_files:
+    - default_vars.yml
+  vars:
+    os_distro: "{{ ansible_distro }}"
+  roles:
+    - provision-worker
+
+# JMeter App configuration
+- hosts: jmeter
+  become: yes
+  roles:
+    - {role: ansible-role-jmeter, when: jmeter_continous_load_generater == True }
+  vars:
+    app_server: "{{ jmeter_server_var }}"
+    app_server_port: "{{ jmeter_port_var }}"

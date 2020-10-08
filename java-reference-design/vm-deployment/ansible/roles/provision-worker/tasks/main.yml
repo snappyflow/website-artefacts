@@ -1,0 +1,5 @@
+---
+- name: Running mvn clean on worker
+  shell: "cd {{ worker_directory }} && mvn clean install"
+
+- include_tasks: deploy-worker.yml

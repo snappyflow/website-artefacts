@@ -1,0 +1,27 @@
+---
+default_kafka_directory: "/opt/kafka"
+kafka_version: 1.0.0
+scala_version: 2.12
+
+download_url: "https://archive.apache.org/dist/kafka"
+kafka_download_url: "{{ download_url }}/{{ kafka_version }}/kafka_{{ scala_version }}-{{ kafka_version }}.tgz"
+kafka_install_path: "{{ default_kafka_directory }}/kafka_{{ scala_version }}-{{ kafka_version }}"
+zookeeper_ip_port: "{{ hostvars['zookeeper'].ansible_host }}:2181"
+kafka_file: "kafka_{{ scala_version }}-{{ kafka_version }}.tgz"
+
+default_repository_directory: "{{playbook_dir}}/.."
+manager_directory: "{{playbook_dir}}/../provisioner/provision-manager"
+worker_directory: "{{playbook_dir}}/../provisioner/provision-worker"
+
+APP_MANAGER: provision-manager
+APP_WORKER: provision-worker
+LOG_PATH: /tmp
+#If you want SF Trace functionality then change below variable to "true"
+#Make sure SF Agent is installed.
+SFTRACE_AGENT: false
+
+# Baseline
+single_setup_baseline:
+  RAM: 2048              # Total RAM in MB
+  CPU: 2                 # Total CPU cores
+  DISK_SIZE: 10          # Disk size in GB

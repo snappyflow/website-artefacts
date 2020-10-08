@@ -1,0 +1,19 @@
+# Copy database dump file to remote host and restore it to database 'my_db'
+- name: Copy database schema dump file
+  copy:
+    src: ./sql-dump-file/schema.sql
+    dest: /tmp
+
+- name: Copy database data dump file
+  copy:
+    src: ./sql-dump-file/data.sql
+    dest: /tmp
+
+- name: Import schema and data files to mysql
+  mysql_db:
+    state: import
+    name: all
+    target: /tmp/{{ item }}.sql
+  with_items:
+    - schema
+    - data
