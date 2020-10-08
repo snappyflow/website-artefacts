@@ -1,0 +1,46 @@
+- name: Get running processes
+  become: yes
+  shell: "ps -ef | grep -v grep | grep -w {{ APP_WORKER }} | awk '{print $2}'"
+  register: running_processes
+
+- name: Kill running processes
+  become: yes
+  shell: "kill {{ item }}"
+  with_items: "{{ running_processes.stdout_lines }}"
+
+- wait_for:
+    path: "/proc/{{ item }}/status"
+    state: absent
+  with_items: "{{ running_processes.stdout_lines }}"
+  ignore_errors: yes
+  become: yes
+  register: killed_processes
+
+- name: Force kill stuck processes
+  become: yes
+  shell: "kill -9 {{ item }}"
+  with_items: "{{ killed_processes.results | select('failed') | map(attribute='item') | list }}"
+
+- name: Copy provision-worker service script to /etc/init.d/ dir
+  become: yes
+  template:
+    src: provision-worker
+    dest: "/etc/init.d/provision-worker"
+    force: yes
+    mode: u=rwx,g=rx,o=rx
+
+- name: Copy provision-worker service script to /etc/systemd/system/
+  become: yes
+  template:
+    src: provision-worker.service.j2
+    dest: "/etc/systemd/system/provision-worker.service"
+    force: yes
+    mode: u=rw,g=r,o=r
+
+- name: Start and enable provision-worker services for automatic start
+  become: yes
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    name: provision-worker

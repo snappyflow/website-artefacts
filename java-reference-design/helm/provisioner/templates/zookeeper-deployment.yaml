@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "provisioner.fullname" . }}-zookeeper
+  labels:
+    snappyflow/appname: {{ .Values.global.sfappname }}
+    snappyflow/projectname: {{ .Values.global.sfprojectname }}
+    snappyflow/component: zookeeper
+spec:
+  replicas: {{ .Values.zookeeper.replicaCount }}
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+        snappyflow/appname: {{ .Values.global.sfappname }}
+        snappyflow/projectname: {{ .Values.global.sfprojectname }}
+        snappyflow/component: zookeeper
+    spec:
+      containers:
+      - name: zoo1
+        image: "{{ .Values.zookeeper.image.repository }}:{{ .Values.zookeeper.image.tag }}"
+        imagePullPolicy: {{ .Values.zookeeper.image.pullPolicy }}
+        ports:
+        - containerPort: 2181
+        env:
+        - name: ZOOKEEPER_ID
+          value: "1"
+        - name: ZOOKEEPER_SERVER_1
+          value: zoo1
+        - name: ZOOKEEPER_CLIENT_PORT
+          value: "2181"
+        # - name: ZOOKEEPER_LOG4J_OPTS
+        #   value: -Dlog4j.configuration=file:///etc/customlog4j/connect-log4j.properties
+      #   volumeMounts:
+      #     - name: config-file-zookeeper
+      #       mountPath: /conf/log4j.properties
+      # volumes:
+      #   - name: config-file-zookeeper
+      #     configMap:
+      #       name: {{ include "provisioner.fullname" . }}-zookeeper-log

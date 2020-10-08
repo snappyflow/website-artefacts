@@ -1,0 +1,19 @@
+- name: Fail if OS architecture is not 64 bit
+  fail:
+    msg: "OS with 64 bit required for deployment"
+  when: ansible_architecture != "x86_64"
+
+- name: Fail when RAM is less than kafka recommended limits
+  fail:
+    msg: "not enough RAM avaibale to deploy kafka"
+  when: ansible_memory_mb.real.total < single_setup_baseline.RAM
+
+- name: Fail when Total CPU is less than recommended limit
+  fail:
+    msg: "Not enough CPU cores available"
+  when: ansible_processor_vcpus <  single_setup_baseline.CPU
+
+#- name: Fail when disk size is less than recommended limit
+#  fail:
+#    msg: "Not enough disk space available"
+#  when: disk_size < single_setup_baseline.DISK_SIZE

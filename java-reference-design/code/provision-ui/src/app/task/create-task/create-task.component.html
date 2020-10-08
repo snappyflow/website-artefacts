@@ -1,0 +1,39 @@
+<h3 class="text-center mb-3">Add Task</h3> 
+
+<hr />
+
+<div class="container">
+  <div class="row vcenter">
+    <div class="col-sm-6 py-1 text-center">
+      <img src="https://img.icons8.com/clouds/300/000000/cloud.png" class="img-fluid" />
+    </div>
+    <div class="col-sm-6 py-1">
+      <div [hidden]="submitted">
+        <form (ngSubmit)="onSubmit()" #taskForm="ngForm">
+
+          <input type="text" class="form-control my-2" id="name" required [(ngModel)]="task.name" name="name" placeholder="Enter OS Name" />      
+          <input type="text" class="form-control my-2" id="targetCloud" required [(ngModel)]="task.targetCloud" name="targetCloud" placeholder="Enter Cloud Type" />
+
+          <!-- <select class="custom-select my-2" id="name" required [(ngModel)]="task.name" name="name">
+            <option *ngFor = "let i of os" [ngValue]="i" [disabled]="i === 'Select OS'">{{i}}</option>
+          </select>
+          <select class="custom-select my-2" id="cloud_type" required [(ngModel)]="task.cloud_type" name="cloud_type">
+            <option *ngFor = "let i of cloud" [ngValue]="i" [disabled]="i === 'Select Cloud Type'">{{i}}</option>
+          </select> -->
+          
+          <button type="submit" class="btn btn-success my-2" [disabled]="!taskForm.form.valid">Submit <i class="fas fa-check-circle"></i></button>
+        
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<br /><br />
+
+<button (click)="gotoList()" class="btn btn-secondary mb-5"><i class="fas fa-angle-double-left"></i> Back to Task List</button><br>
+
+<div [hidden]="!submitted">
+  <h4>Task added successfully!</h4>
+  <button class="btn btn-success" (click)="newTask()">Add</button>
+</div>

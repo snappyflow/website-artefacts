@@ -1,0 +1,92 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          provision-manager
+# Required-Start:    $all
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: your description here
+### END INIT INFO
+
+SERVICE_NAME=target/provision-manager-0.0.1-SNAPSHOT
+BASE_DIR={{ manager_directory }}
+
+if {{ SFTRACE_AGENT }}
+then
+START_COMMAND="nohup java -javaagent:/opt/sfagent/sftrace/sfjava/sftrace-java-agent-1.0.jar -jar $BASE_DIR/$SERVICE_NAME.jar &"
+else
+START_COMMAND="nohup java -jar $BASE_DIR/$SERVICE_NAME.jar &"
+fi
+
+PID_FILE=/tmp/provision-manager.pid
+LOG_DIR={{ LOG_PATH }}
+
+start() {
+  PID=`$START_COMMAND > $LOG_DIR/init.log 2>$LOG_DIR/init.error.log & echo $!`
+}
+
+case "$1" in
+start)
+    if [ -f $PID_FILE ]; then
+        PID=`cat $PID_FILE`
+        if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+            start
+        else
+            echo "$SERVICE_NAME is already running ... [$PID]"
+            exit 0
+        fi
+    else
+        start
+    fi
+
+    if [ -z $PID ]; then
+        echo "Failed starting $SERVICE_NAME"
+        exit 1
+    else
+        echo $PID > $PID_FILE
+        echo "$SERVICE_NAME started ...[$PID]"
+        exit 0
+    fi
+;;
+status)
+    if [ -f $PID_FILE ]; then
+        PID=`cat $PID_FILE`
+        if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+            echo "$SERVICE_NAME not running (process dead but PID file exists)"
+            exit 1
+        else
+            echo "$SERVICE_NAME running... [$PID]"
+            exit 0
+        fi
+    else
+        echo "$SERVICE_NAME not running..."
+        exit 0
+    fi
+;;
+stop)
+    if [ -f $PID_FILE ]; then
+        PID=`cat $PID_FILE`
+        if [ -z "`ps axf | grep ${PID} | grep -v grep`" ]; then
+            echo "$SERVICE_NAME not running (process dead but PID file exists)"
+            rm -f $PID_FILE
+            exit 1
+        else
+            PID=`cat $PID_FILE`
+            kill -term $PID
+            echo "$SERVICE_NAME stopped... [$PID]"
+            rm -f $PID_FILE
+            exit 0
+        fi
+    else
+        echo "$SERVICE_NAME not running... (PID not found)"
+        exit 0
+    fi
+;;
+restart)
+    $0 stop
+    $0 start
+;;
+*)
+    echo "Usage: $0 {status|start|stop|restart}"
+    exit 0
+esac

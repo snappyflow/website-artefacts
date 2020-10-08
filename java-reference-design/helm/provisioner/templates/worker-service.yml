@@ -1,0 +1,30 @@
+# Define a 'Service' to expose manager to other services.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "provisioner.fullname" . }}-worker-service
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: worker
+spec:
+  ports:
+  - port: 8083
+    targetPort: 8083
+    name: provision-worker-port
+    protocol: TCP
+  selector:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: worker
+  clusterIP: None

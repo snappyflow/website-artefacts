@@ -1,0 +1,107 @@
+---
+# Configure 'Deployment' of spring boot server.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "provisioner.fullname" . }}-manager
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: manager
+spec:
+  replicas: {{ .Values.manager.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "provisioner.name" . }}
+      chart: {{ include "provisioner.chart" . }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+      {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+      snappyflow/component: manager
+  template:
+    metadata:
+      labels:
+        app: {{ include "provisioner.name" . }}
+        chart: {{ include "provisioner.chart" . }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+        {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+        snappyflow/component: manager
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: mysql:5.7
+          command:
+            - sh
+            - -c
+            - -x
+            - "until mysqladmin ping -h${DATABASE_HOST} -u${DATABASE_USERNAME} -p${DATABASE_PASSWORD}; do sleep 2; done"
+          env:
+            - name: DATABASE_HOST
+              value: "{{ include "provisioner.fullname" . }}-mysql-service"
+            - name: DATABASE_USERNAME
+              value: "root"
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-admin              # name of the 'Secret'
+                  key: password
+        - name: sftrace-java-agent
+          image: busybox
+          command:
+          - sh
+          - -c
+          - -x
+          - wget -O /sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
+          volumeMounts:
+          - mountPath: /sfagent
+            name: sftrace-agent
+      containers:
+        - name: {{ .Chart.Name }}-manager
+          image: {{ .Values.manager.image.repository }}:{{ .Values.manager.image.tag }}            # spring boot application image
+          imagePullPolicy: {{ .Values.manager.image.pullPolicy }}
+          command:
+            - sh
+            - -c
+            - java $(SFTRACE_AGENT) -jar manager.jar          
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: sftrace-agent
+              mountPath: /sfagent
+            - name: config-file-manager
+              mountPath: /config/application.properties
+              subPath: application.properties
+      ############################### environment variable ###############################
+          env:
+            - name: SFTRACE_PROFILE_KEY
+              value: {{ .Values.global.key }}
+            - name: SFTRACE_SERVICE_NAME
+              value: "provision-manager"
+            - name: SFTRACE_PROJECT_NAME
+              value: {{ .Values.global.sfprojectname }}
+            - name: SFTRACE_APP_NAME
+              value: {{ .Values.global.sfappname }}
+            - name: SFTRACE_AGENT
+              value: -javaagent:/sfagent/sftrace/java/sftrace-java-agent.jar
+            - name: ELASTIC_APM_DISABLE_INSTRUMENTATIONS
+              value: spring-mvc
+            - name: ELASTIC_APM_USE_PATH_AS_TRANSACTION_NAME
+              value: "true"
+  #Replace <normalized urls> with appropriate urls. Transactions can be filtered by normalized url in SnappyFlow-APM UI
+            - name: ELASTIC_APM_URL_GROUPS
+              value: /api/provision/delete-all,/api/provision/*,/api/worker/get-counter/*,/api/worker/reset-counter/*,/reset-counter/*
+      #####################################################################################
+      volumes:
+        - name: config-file-manager
+          configMap:
+            name: manager-application-properties
+        - name: sftrace-agent
+          emptyDir: {}

@@ -1,0 +1,7 @@
+---
+#- include_tasks: clone-repository.yml
+
+- name: Running mvn clean on manager
+  shell: "cd {{ manager_directory }} && mvn clean install"
+
+- include_tasks: deploy-manager.yml

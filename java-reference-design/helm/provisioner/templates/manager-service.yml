@@ -1,0 +1,30 @@
+---
+# Define a 'Service' to expose manager to other services.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "provisioner.fullname" . }}-manager-service
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: manager
+spec:
+  ports:
+    # - nodePort: {{ .Values.manager.nodePort }}
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: {{ include "provisioner.name" . }}
+    chart: {{ include "provisioner.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
+    {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
+    snappyflow/component: manager
+  type: ClusterIP

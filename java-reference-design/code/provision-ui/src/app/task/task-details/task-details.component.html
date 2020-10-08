@@ -1,0 +1,24 @@
+<h3 class="text-center mb-3">Task Details</h3> 
+
+<hr />
+
+<div class="container" *ngIf="task">
+  <div class="row vcenter justify-content-center">
+    <div class="col-sm-6 py-1 text-center">
+      <img src="https://img.icons8.com/clouds/300/000000/cloud.png" class="img-fluid" />
+    </div>
+    <div class="col-sm-6 py-1 pt-3">
+      <p class="lead"><span class="font-weight-bold">Task ID : </span>{{task.id}}</p>
+      <p class="lead"><span class="font-weight-bold">Worker ID : </span>{{task.worker_id}}</p>
+      <p class="lead"><span class="font-weight-bold">Task Name : </span>{{task.name}}</p>
+      <p class="lead"><span class="font-weight-bold">Cloud Type : </span>{{task.targetCloud}}</p>
+      <p class="lead"><span class="font-weight-bold">Status : </span>{{task.status}}</p>
+      <p class="lead"><span class="font-weight-bold">Created At : </span>{{task.created | date:"medium"}}</p>
+      <p class="lead"><span class="font-weight-bold">Updated At : </span>{{task.updated | date:"medium"}}</p>
+    </div>
+  </div>
+</div>
+
+<br /><br />
+
+<button (click)="list()" class="btn btn-secondary mb-5"><i class="fas fa-angle-double-left"></i> Back to Task List</button><br>
