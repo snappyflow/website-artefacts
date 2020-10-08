@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.manager.provisionmanager.common.AppConstants;
 import com.manager.provisionmanager.entity.Counter;
 import com.manager.provisionmanager.entity.SummaryCounter;
+import com.manager.provisionmanager.exception.CustomResponse;
 import com.manager.provisionmanager.exception.ResourceNotFoundException;
 import com.manager.provisionmanager.service.ServerService;
 
@@ -98,7 +99,7 @@ public class WorkerController {
   }
 
   @GetMapping(value = "/reset-counters", produces = "application/json")
-  public String resetCounters() throws Exception {
+  public CustomResponse resetCounters() throws Exception {
 
     LOG.info(this.getClass().getSimpleName() + " - Reset counters is invoked.");
 
@@ -112,7 +113,7 @@ public class WorkerController {
 
     }
 
-    return "All the counters have been resetted successfully!";
+    return new CustomResponse("All the counters have been resetted successfully!");
 
   }
 
@@ -155,7 +156,7 @@ public class WorkerController {
   }
 
   @GetMapping(value = "/reset-counter/{id}", produces = "application/json")
-  public String resetCounter(@PathVariable int id) throws Exception {
+  public CustomResponse resetCounter(@PathVariable int id) throws Exception {
 
     LOG.info(this.getClass().getSimpleName() + " - Reset counter is invoked.");
 
@@ -182,9 +183,9 @@ public class WorkerController {
     }
 
     if (!result)
-      return "Could not find worker with id - " + id;
+      throw new ResourceNotFoundException("Could not find worker with id - " + id);
 
-    return "The counter for worker with ID : " + id + " is resetted successfully!";
+    return new CustomResponse("The counter for worker with ID : " + id + " is resetted successfully!");
 
   }
 
