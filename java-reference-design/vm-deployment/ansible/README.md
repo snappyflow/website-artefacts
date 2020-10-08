@@ -16,10 +16,10 @@ The basic system requirements for successful deployment of the application is as
 
 # Single Click Deployment 
 If the Operating System is Ubuntu then refer this document:
-> * [Ubuntu (Debian) Based Setup](https://github.com/pramurthy/javasamples/blob/master/ansible/Ubuntu(Debian).md#ubuntu-debian-based-setup-)
+> * [Ubuntu (Debian) Based Setup](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/vm-deployment/ansible/Ubuntu(Debian).md#ubuntu-debian-based-setup-)
 
 If the Operating System is CentOS then refer this document:
-> * [CentOS Based Setup](https://github.com/pramurthy/javasamples/blob/master/ansible/CentOS.md#centos-based-setup-)
+> * [CentOS Based Setup](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/vm-deployment/ansible/CentOS.md#centos-based-setup-)
 
 To verify if the deployment has happened properly, refer this document:
-> * [Deployment Verification](https://github.com/pramurthy/javasamples/blob/master/ansible/Deployment%20Verification.md#deployment-verification-)
+> * [Deployment Verification]https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/vm-deployment/ansible/Deployment%20Verification.md#deployment-verification-)
