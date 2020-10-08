@@ -91,9 +91,9 @@ Provisioner is an application where you can easily provision multiple VMs & also
 
 > Before starting the application, you need to setup MySQL and Kafka in your system. You can easily perform the necessary setup by following the below the steps based on your Linux flavour.
 >
-> * [Ubuntu (Debian) Based Setup](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/Ubuntu%20(debian).md#ubuntu-debian-based-setup-)
+> * [Ubuntu (Debian) Based Setup](https://github.com/snappyflow/website-artefacts/blob/master/java-reference-design/code/Ubuntu%20(debian).md#ubuntu-debian-based-setup-)
 >
-> * [CentOS Based Setup](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/CentOS.md#centos-based-setup-)
+> * [CentOS Based Setup](https://github.com/snappyflow/website-artefacts/blob/master/java-reference-design/code/CentOS.md#centos-based-setup-)
 
 <br />
 
@@ -170,21 +170,21 @@ Command Line Option | Default Value | Example Value | Description
 ## Provisioner UI Setup :
 
 If you want to setup the Provisioner UI, then follow the steps defined
-[here](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/provision-ui#provisioner-ui).
+[here](https://github.com/snappyflow/website-artefacts/blob/master/java-reference-design/code/provision-ui#provisioner-ui).
 
 <br />
 
 ## JMeter Setup :
 
 If you want to setup the JMeter to perform load testing, then follow the steps defined
-[here](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/jmeter#jmeter-installation-).
+[here](https://github.com/snappyflow/website-artefacts/blob/master/java-reference-design/code/jmeter#jmeter-installation-).
 
 <br />
 
 ## Contributing :
 
 > Before contributing to this project, first you need to perform the necessary setup (for Windows) by following the steps described 
-> [here](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code//Windows.md#prerequisites-).
+> [here](https://github.com/snappyflow/website-artefacts/blob/master/java-reference-design/code/Windows.md#prerequisites-).
 
 To contribute to this project, follow these steps 🤓 :
 
