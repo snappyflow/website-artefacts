@@ -11,7 +11,7 @@ Provisioner is an application where you can easily provision multiple VMs & also
 ## Clone the Application :
 
 ```
-git clone https://github.com/pramurthy/javasamples.git ... (at /home/ubuntu ... it asks for credentials)
+git clone https://github.com/snappyflow/website-artefacts.git ... (at /home/ubuntu ... it asks for credentials)
 ```
 
 ## Installing the Chart
@@ -19,7 +19,7 @@ git clone https://github.com/pramurthy/javasamples.git ... (at /home/ubuntu ... 
 To install the chart with the release name `my-release`:
 
 ```python
-cd ~/javasamples/provisioner/kubernetes 
+cd ~/website-artefacts/java-reference-design/helm 
 ```
 For helm version 2 use this command:
 ```python

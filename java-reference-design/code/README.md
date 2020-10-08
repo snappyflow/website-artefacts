@@ -91,15 +91,16 @@ Provisioner is an application where you can easily provision multiple VMs & also
 
 > Before starting the application, you need to setup MySQL and Kafka in your system. You can easily perform the necessary setup by following the below the steps based on your Linux flavour.
 >
-> * [Ubuntu (Debian) Based Setup](https://github.com/pramurthy/javasamples/blob/master/provisioner/Ubuntu%20(debian).md#ubuntu-debian-based-setup-)
-> * [CentOS Based Setup](https://github.com/pramurthy/javasamples/blob/master/provisioner/CentOS.md#centos-based-setup-)
+> * [Ubuntu (Debian) Based Setup](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/Ubuntu%20(debian).md#ubuntu-debian-based-setup-)
+>
+> * [CentOS Based Setup](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/CentOS.md#centos-based-setup-)
 
 <br />
 
 ## Running the Application :
 
 ```
-git clone https://github.com/pramurthy/javasamples.git ... (at /home/ubuntu ... it asks for credentials)
+git clone https://github.com/snappyflow/website-artefacts.git ... (at /home/ubuntu ... it asks for credentials)
 ```
 
 > Note : Make sure that MySQL and Kafka are running.
@@ -107,7 +108,7 @@ git clone https://github.com/pramurthy/javasamples.git ... (at /home/ubuntu ... 
 Open new terminal build and run manager code : 
 
 ```python
-cd ~/javasamples/provisioner/provision-manager 
+cd ~/website-artefacts/java-reference-design/code/provision-manager
 
 mvn clean install 
 
@@ -134,7 +135,7 @@ Command Line Option | Default Value | Example Value | Description
 Open new terminal build and run worker code : 
 
 ```python
-cd ~/javasamples/provisioner/provision-worker
+cd ~/website-artefacts/java-reference-design/code/provision-worker
 
 mvn clean install
 
@@ -169,21 +170,21 @@ Command Line Option | Default Value | Example Value | Description
 ## Provisioner UI Setup :
 
 If you want to setup the Provisioner UI, then follow the steps defined
-[here](https://github.com/pramurthy/javasamples/tree/master/provisioner/provision-ui#provisioner-ui).
+[here](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/provision-ui#provisioner-ui).
 
 <br />
 
 ## JMeter Setup :
 
 If you want to setup the JMeter to perform load testing, then follow the steps defined
-[here](https://github.com/pramurthy/javasamples/tree/master/provisioner/jmeter#jmeter-installation-).
+[here](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code/jmeter#jmeter-installation-).
 
 <br />
 
 ## Contributing :
 
 > Before contributing to this project, first you need to perform the necessary setup (for Windows) by following the steps described 
-> [here](https://github.com/pramurthy/javasamples/blob/master/provisioner/Windows.md#prerequisites-).
+> [here](https://github.com/snappyflow/website-artefacts/blob/first-draft-code-check-in/java-reference-design/code//Windows.md#prerequisites-).
 
 To contribute to this project, follow these steps 🤓 :
 
