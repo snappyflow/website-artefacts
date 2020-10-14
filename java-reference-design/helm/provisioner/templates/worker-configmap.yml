@@ -21,7 +21,7 @@ data:
     kafka.group-id = kafka-group
     kafka.topic-name-producer = notification-topic
     kafka.topic-name-consumer = task-topic
-    kafka.bootstrap-server = {{ include "provisioner.fullname" . }}-kafka-service:9092
+    kafka.bootstrap-server = {{ include "kafka.fullname" . }}-headless:9092
     kafka.auto-offset-reset = earliest
 
     # Task Constants : 

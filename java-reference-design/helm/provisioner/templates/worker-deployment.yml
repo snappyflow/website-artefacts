@@ -53,7 +53,7 @@ spec:
           command:
             - sh
             - -c
-            - java $(SFTRACE_AGENT) -jar worker.jar     
+            - java $(SFTRACE_AGENT) ${JMX_OPTS} -jar worker.jar     
           ports:
             - containerPort: 8083
           volumeMounts:
@@ -81,10 +81,48 @@ spec:
   #Replace <normalized urls> with appropriate urls. Transactions can be filtered by normalized url in SnappyFlow-APM UI
             - name: ELASTIC_APM_URL_GROUPS
               value: /api/provision/delete-all,/api/provision/*,/api/worker/get-counter/*,/api/worker/reset-counter/*,/reset-counter/*
+            - name: JMX_PORT
+              value: "5555"
+            - name: JMX_OPTS
+              value: "-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.local.only=false	-Dcom.sun.management.jmxremote.port=5555 -Dcom.sun.management.jmxremote.rmi.port=5555 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
       #####################################################################################
+{{- if .Values.worker.jmx_exporter.enabled }}
+        - name: jmx-exporter
+          image: "{{ .Values.worker.jmx_exporter.image.repository }}:{{ .Values.worker.jmx_exporter.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.jmx_exporter.image.pullPolicy | quote }}
+          command:
+            - sh
+            - -c
+            - -x
+            - java -jar /opt/bitnami/jmx-exporter/jmx_prometheus_httpserver.jar {{ .Values.worker.jmx_exporter.port }} /config/jmx-config.yml
+          ports:
+          - name: jmx-exporter
+            containerPort: {{ .Values.worker.jmx_exporter.port }}
+          volumeMounts:
+            - name: jmx-exporter
+              mountPath: /config/jmx-config.yml
+              subPath: jmx-config.yml
+          livenessProbe:
+            httpGet:
+              path: /metric
+              port: jmx-exporter
+            initialDelaySeconds: 90
+            timeoutSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /metric
+              port: jmx-exporter
+            initialDelaySeconds: 60
+            timeoutSeconds: 20
+{{- end }}
       volumes:
         - name: config-file-worker
           configMap:
             name: worker-application-properties
         - name: sftrace-agent
           emptyDir: {}
+{{- if .Values.worker.jmx_exporter.enabled }}
+        - name: jmx-exporter
+          configMap:
+            name: {{ include "provisioner.fullname" . }}-jmx-exporter
+{{- end }}

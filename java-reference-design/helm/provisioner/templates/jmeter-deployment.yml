@@ -32,22 +32,22 @@ spec:
       annotations:
         {{ toYaml .Values.podAnnotations | indent 8 }}
     spec:
-      initContainers:
-        - name: get-jar-files
-          image: alpine
-          command:
-            - sh
-            - -c
-            - -x
-            - apk add --no-cache curl && curl ${JOLOKIA_JAR_URL} -o /data/jolokia.jar && curl ${MYSQL_CONNECTOR} -o /data/mysql-connector.tar.gz && tar -zxvf /data/mysql-connector.tar.gz mysql-connector-java-8.0.18/mysql-connector-java-8.0.18.jar -C /data
-          env:
-            - name: JOLOKIA_JAR_URL
-              value: https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/1.6.2/jolokia-jvm-1.6.2-agent.jar
-            - name: MYSQL_CONNECTOR
-              value: https://cdn.mysql.com/archives/mysql-connector-java-8.0/mysql-connector-java-8.0.18.tar.gz
-          volumeMounts:
-            - name: data
-              mountPath: /data
+      # initContainers:
+      #   - name: get-jar-files
+      #     image: alpine
+      #     command:
+      #       - sh
+      #       - -c
+      #       - -x
+      #       - apk add --no-cache curl && curl ${JOLOKIA_JAR_URL} -o /data/jolokia.jar && curl ${MYSQL_CONNECTOR} -o /data/mysql-connector.tar.gz && tar -zxvf /data/mysql-connector.tar.gz mysql-connector-java-8.0.18/mysql-connector-java-8.0.18.jar -C /data
+      #     env:
+      #       - name: JOLOKIA_JAR_URL
+      #         value: https://repo1.maven.org/maven2/org/jolokia/jolokia-jvm/1.6.2/jolokia-jvm-1.6.2-agent.jar
+      #       - name: MYSQL_CONNECTOR
+      #         value: https://cdn.mysql.com/archives/mysql-connector-java-8.0/mysql-connector-java-8.0.18.tar.gz
+      #     volumeMounts:
+      #       - name: data
+      #         mountPath: /data
       containers:
         - name: {{ .Chart.Name }}-jmeter
           image: "{{ .Values.jmeter.image.repository }}:{{ .Values.jmeter.image.tag }}"
@@ -56,7 +56,7 @@ spec:
             - sh 
             - -c 
             - -x 
-            - cp /data/mysql-connector-java-8.0.18/mysql-connector-java-8.0.18.jar /opt/apache-jmeter-5.1.1/lib/.; cp /data/jolokia.jar /opt/apache-jmeter-5.1.1/lib/. && touch /var/log/test_plan.jtl; cd $JMETER_HOME/bin && /usr/bin/java -server $JAVA_ARGS $JVM_ARGS $JAVA_AGENT -jar $JMETER_HOME/bin/ApacheJMeter.jar -n -t /scripts/test_plan.jmx -l /var/log/test_plan.jtl -LINFO -j /var/log/jmeter.log -Jserver=${PROVISIONER_HOST};
+            - touch /var/log/test_plan.jtl; cd $JMETER_HOME/bin && /usr/bin/java -server $JAVA_ARGS $JVM_ARGS $JAVA_AGENT -jar $JMETER_HOME/bin/ApacheJMeter.jar -n -t /scripts/test_plan.jmx -l /var/log/test_plan.jtl -LINFO -j /var/log/jmeter.log -Jserver=${PROVISIONER_HOST} -Jport=${PROVISIONER_PORT};
           env:
             - name: HOST_IP
               valueFrom:
@@ -65,7 +65,7 @@ spec:
             - name: PROVISIONER_HOST
               value: {{ include "provisioner.fullname" . }}-manager-service
             - name: PROVISIONER_PORT
-              value: "8080"
+              value: "{{ .Values.manager.targetPort }}"
             - name: JMETER_HOME
               value: "/opt/apache-jmeter-5.1.1"
             - name: JVM_ARGS
@@ -87,6 +87,75 @@ spec:
               mountPath: /var/log
           resources:
 {{ toYaml .Values.jmeter.resources | indent 12 }}
+{{- if .Values.jmeter.sfagent.enabled }}
+        - name: sfagent
+          image:  "{{ .Values.jmeter.sfagent.image }}:{{ .Values.jmeter.sfagent.imageTag }}"
+          imagePullPolicy: {{ .Values.jmeter.sfagent.imagePullPolicy | quote }}
+          command:
+          - /app/sfagent
+          - -enable-console-log
+          env:
+          - name: APP_NAME
+            value: {{ .Values.global.sfappname }}
+          - name: PROJECT_NAME
+            value: {{ .Values.global.sfprojectname }}
+          resources:
+{{ toYaml .Values.jmeter.sfagent.resources | indent 12 }}
+          volumeMounts:
+          - name: jmeterlog
+            mountPath: /var/log
+          {{- if .Values.jmeter.sfagent.enabled }}
+          - name: sfagent-config
+            mountPath: /opt/sfagent/config.yaml
+            subPath: config.yaml
+          {{- end }}
+{{- end }}
+{{- if .Values.jmeter.logrotate.enabled }}
+        - name: logrotate
+          image:  "{{ .Values.jmeter.logrotate.image.repository }}:{{ .Values.jmeter.logrotate.image.tag }}"
+          imagePullPolicy: {{ .Values.jmeter.logrotate.image.pullPolicy | quote }}
+          env:
+          {{- range $key, $value := .Values.jmeter.logrotate.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+          - name: LOGS_DIRECTORIES
+            value: "/var/log"
+          resources:
+{{ toYaml .Values.jmeter.logrotate.resources | indent 12 }}
+          volumeMounts:
+          - name: jmeterlog
+            mountPath: /var/log
+{{- end }}
+{{- if .Values.jmeter.jmx_exporter.enabled }}
+        - name: jmx-exporter
+          image: "{{ .Values.jmeter.jmx_exporter.image.repository }}:{{ .Values.jmeter.jmx_exporter.image.tag }}"
+          imagePullPolicy: {{ .Values.jmeter.jmx_exporter.image.pullPolicy | quote }}
+          command:
+            - sh
+            - -c
+            - -x
+            - java -jar /opt/bitnami/jmx-exporter/jmx_prometheus_httpserver.jar {{ .Values.jmeter.jmx_exporter.port }} /config/jmx-config.yml
+          ports:
+          - name: jmx-exporter
+            containerPort: {{ .Values.jmeter.jmx_exporter.port }}
+          volumeMounts:
+            - name: jmx-exporter
+              mountPath: /config/jmx-config.yml
+              subPath: jmx-config.yml
+          livenessProbe:
+            httpGet:
+              path: /metric
+              port: jmx-exporter
+            initialDelaySeconds: 90
+            timeoutSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /metric
+              port: jmx-exporter
+            initialDelaySeconds: 60
+            timeoutSeconds: 20
+{{- end }}
       volumes:
         - name: data
           emptyDir: {}
@@ -95,4 +164,14 @@ spec:
             name: {{ include "provisioner.fullname" . }}-scripts
         - name: jmeterlog
           emptyDir: {}
+        {{- if .Values.jmeter.jmx_exporter.enabled }}
+        - name: jmx-exporter
+          configMap:
+            name: {{ include "provisioner.fullname" . }}-jmx-exporter
+        {{- end }}
+        {{- if .Values.jmeter.sfagent.enabled }}
+        - name: sfagent-config
+          configMap:
+            name: {{ include "provisioner.fullname" . }}-sfagent-jmeter
+        {{- end }}
 {{- end }}

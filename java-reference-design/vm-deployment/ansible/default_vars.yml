@@ -10,8 +10,8 @@ zookeeper_ip_port: "{{ hostvars['zookeeper'].ansible_host }}:2181"
 kafka_file: "kafka_{{ scala_version }}-{{ kafka_version }}.tgz"
 
 default_repository_directory: "{{playbook_dir}}/.."
-manager_directory: "{{playbook_dir}}/../provisioner/provision-manager"
-worker_directory: "{{playbook_dir}}/../provisioner/provision-worker"
+manager_directory: "{{playbook_dir}}/../../code/provision-manager"
+worker_directory: "{{playbook_dir}}/../../code/provision-worker"
 
 APP_MANAGER: provision-manager
 APP_WORKER: provision-worker

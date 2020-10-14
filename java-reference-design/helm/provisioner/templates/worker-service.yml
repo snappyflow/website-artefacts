@@ -19,6 +19,11 @@ spec:
     targetPort: 8083
     name: provision-worker-port
     protocol: TCP
+{{- if .Values.worker.jmx_exporter.enabled }}
+  - name: jmx-exporter
+    port: {{ .Values.worker.jmx_exporter.port }}
+    targetPort: jmx-exporter
+{{- end }}
   selector:
     app: {{ include "provisioner.name" . }}
     chart: {{ include "provisioner.chart" . }}

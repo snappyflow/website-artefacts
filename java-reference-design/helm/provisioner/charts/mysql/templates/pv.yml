@@ -1,7 +1,7 @@
 apiVersion: v1
-kind: Secret
+kind: PersistentVolume
 metadata:
-  name: db-admin
+  name: mysql-pv
   namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "provisioner.name" . }}
@@ -12,5 +12,19 @@ metadata:
     {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
     snappyflow/component: mysql
     tier: database
-data:
-  password: cm9vdA==
+    type: local
+spec:
+  #storageClassName: manual
+  capacity:
+    storage: {{ .Values.persistence.size | quote }}
+  accessModes:
+    - {{ .Values.persistence.accessMode | quote }}
+  hostPath:
+    path: "/mnt/data"
+{{- if .Values.persistence.storageClass }}
+{{- if (eq "-" .Values.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.persistence.storageClass }}"
+{{- end }}
+{{- end }}
