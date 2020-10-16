@@ -38,6 +38,7 @@ spec:
       initContainers:
         - name: wait-for-db
           image: mysql:5.7
+          imagePullPolicy: IfNotPresent
           command:
             - sh
             - -c
@@ -45,16 +46,21 @@ spec:
             - "until mysqladmin ping -h${DATABASE_HOST} -u${DATABASE_USERNAME} -p${DATABASE_PASSWORD}; do sleep 2; done"
           env:
             - name: DATABASE_HOST
-              value: "{{ include "provisioner.fullname" . }}-mysql-service"
+              value: "{{ template "mysql.fullname" . }}"
             - name: DATABASE_USERNAME
               value: "root"
             - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: db-admin              # name of the 'Secret'
-                  key: password
+                  name: {{ template "mysql.fullname" . }}
+                  key: mysql-root-password
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: db-admin              # name of the 'Secret'
+              #     key: password
         - name: sftrace-java-agent
           image: busybox
+          imagePullPolicy: IfNotPresent
           command:
           - sh
           - -c
@@ -70,7 +76,7 @@ spec:
           command:
             - sh
             - -c
-            - java $(SFTRACE_AGENT) -jar manager.jar          
+            - java $(SFTRACE_AGENT) ${JMX_OPTS} -jar manager.jar          
           ports:
             - containerPort: 8080
           volumeMounts:
@@ -95,13 +101,52 @@ spec:
               value: spring-mvc
             - name: ELASTIC_APM_USE_PATH_AS_TRANSACTION_NAME
               value: "true"
-  #Replace <normalized urls> with appropriate urls. Transactions can be filtered by normalized url in SnappyFlow-APM UI
+            #Replace <normalized urls> with appropriate urls. 
+            #Transactions can be filtered by normalized url in SnappyFlow-APM UI
             - name: ELASTIC_APM_URL_GROUPS
               value: /api/provision/delete-all,/api/provision/*,/api/worker/get-counter/*,/api/worker/reset-counter/*,/reset-counter/*
+            - name: JMX_PORT
+              value: "5555"
+            - name: JMX_OPTS
+              value: "-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote.local.only=false	-Dcom.sun.management.jmxremote.port=5555 -Dcom.sun.management.jmxremote.rmi.port=5555 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
       #####################################################################################
+{{- if .Values.manager.jmx_exporter.enabled }}
+        - name: jmx-exporter
+          image: "{{ .Values.manager.jmx_exporter.image.repository }}:{{ .Values.manager.jmx_exporter.image.tag }}"
+          imagePullPolicy: {{ .Values.manager.jmx_exporter.image.pullPolicy | quote }}
+          command:
+            - sh
+            - -c
+            - -x
+            - java -jar /opt/bitnami/jmx-exporter/jmx_prometheus_httpserver.jar {{ .Values.manager.jmx_exporter.port }} /config/jmx-config.yml
+          ports:
+          - name: jmx-exporter
+            containerPort: {{ .Values.manager.jmx_exporter.port }}
+          volumeMounts:
+            - name: jmx-exporter
+              mountPath: /config/jmx-config.yml
+              subPath: jmx-config.yml
+          livenessProbe:
+            httpGet:
+              path: /metric
+              port: jmx-exporter
+            initialDelaySeconds: 90
+            timeoutSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /metric
+              port: jmx-exporter
+            initialDelaySeconds: 60
+            timeoutSeconds: 20
+{{- end }}
       volumes:
         - name: config-file-manager
           configMap:
             name: manager-application-properties
         - name: sftrace-agent
           emptyDir: {}
+{{- if .Values.manager.jmx_exporter.enabled }}
+        - name: jmx-exporter
+          configMap:
+            name: {{ include "provisioner.fullname" . }}-jmx-exporter
+{{- end }}

@@ -1,7 +1,8 @@
+{{- if .Values.jmeter.jmx_exporter.enabled }}
 apiVersion: v1
-kind: PersistentVolume
+kind: ConfigMap
 metadata:
-  name: mysql-pv
+  name: {{ include "provisioner.fullname" . }}-jmx-exporter
   namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "provisioner.name" . }}
@@ -10,14 +11,13 @@ metadata:
     heritage: {{ .Release.Service }}
     {{ default "snappyflow/appname" .Values.global.sfappname_key }}: {{ default .Release.Name .Values.global.sfappname }}
     {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
-    snappyflow/component: mysql
-    tier: database
-    type: local
-spec:
-  storageClassName: manual
-  capacity:
-    storage: 500Mi
-  accessModes:
-    - "ReadWriteOnce"
-  hostPath:
-    path: "/mnt/data"
+    snappyflow/component: jmx
+data: 
+  jmx-config.yml: |
+    ---
+    hostPort: 127.0.0.1:5555
+    username: 
+    password:
+    rules:
+    - pattern: ".*"
+{{- end }}

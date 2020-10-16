@@ -15,10 +15,17 @@ metadata:
     {{ default "snappyflow/projectname" .Values.global.sfprojectname_key }}: {{ default .Release.Name .Values.global.sfprojectname }}
     snappyflow/component: manager
 spec:
+  # type: NodePort
   ports:
     # - nodePort: {{ .Values.manager.nodePort }}
-    - port: 8080
-      targetPort: 8080
+    - name: manager-port
+      port: 8080
+      targetPort: {{ .Values.manager.targetPort }}
+  {{- if .Values.manager.jmx_exporter.enabled }}
+    - name: jmx-exporter
+      port: {{ .Values.manager.jmx_exporter.port }}
+      targetPort: jmx-exporter
+  {{- end }}
   selector:
     app: {{ include "provisioner.name" . }}
     chart: {{ include "provisioner.chart" . }}

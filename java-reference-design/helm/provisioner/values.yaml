@@ -11,26 +11,41 @@ fullnameOverride: ""
 # sfappname: petclinic --> snappyflow/appname: petclinic
 # sfprojectname: spring --> snappyflow/projectname: spring
 global:
-  sfappname: "" #SampleProvisioningApp"
-  sfprojectname: "" #sftrace"
+  sfappname: "SampleProvisioningApp"
+  sfprojectname: "sftrace"
   sfappname_key: snappyflow/appname
   sfprojectname_key: snappyflow/projectname
-  key: ""
+  key: "seSv22zlAxMpeWh+xWT67Y60oeh2H35ebpdNmZBCOvcvSVaciYTzO+aS0XA6j/2nPVEIHEQC+Fwt1I9FTIGBhnVcnXH/GnvskXC93A/YMDAcAHhvYiFEaohOSA+mpZxbXQEEA8VZqj7mbIokMSU0Tu8zUaIcgv79Jqm58QdVYcwvTxlqbaLM5DqoAow784wWH9K1JI9av6VH76neZ/8QJi2lixYl0ueaFCebZm+m/TYOY3YMhLD6Bv6IWOe7S5wzjW66g+KZRwp9mNyYS3YBJGVfHAKAUh/GiENUcTaxJ7MTL/qc1eWlUhcCE6Gbs1mHu+SXuWyLRlrYFGaOrh4cGDeKUuqaSiDJ5fPib43GTpkcHpYLItGTHJx6AIuxWlVQX25W/qxdWHzL5Y5vJNYI0WIg3/FaNLPiSvJzkV+BML+OAmfQaxaQhfBOJogiDQZ/ZxL792dV4PvynA+7NXzcTMA42tH+2Jlrlxj8psPpWHo="
 
 manager:
   nodePort: 30100
+  targetPort: 8080
   replicaCount: 1
   image: 
     repository: snappyflowml/provisionmanager-with-sftrace
-    tag: "1.0"
+    tag: "2.0"
     pullPolicy: Always
+  jmx_exporter:
+    enabled: true
+    image:
+      repository: bitnami/jmx-exporter
+      tag: latest
+      pullPolicy: IfNotPresent
+    port: 5556
 
 worker:
   replicaCount: 1
   image: 
     repository: snappyflowml/provisionworker-with-sftrace
-    tag: "1.0"
+    tag: "2.0"
     pullPolicy: Always
+  jmx_exporter:
+    enabled: true
+    image:
+      repository: bitnami/jmx-exporter
+      tag: latest
+      pullPolicy: IfNotPresent
+    port: 5556
 
 # ------------------------------------------------------------------------------
 # sftrace java
@@ -118,22 +133,59 @@ tolerations: []
 
 affinity: {}
 
+# mysql:
+#   replicaCount: 1
+#   strategy:
+#     type: Recreate
+#   image:
+#       repository: mysql
+#       tag: 5.7
+#       pullPolicy: IfNotPresent
+#   env: {}
+#   resources: 
+#     limits:
+#       cpu: 500m
+#       memory: 1024Mi
+#     requests:
+#       cpu: 250m
+#       memory: 512Mi
+
 mysql:
-  replicaCount: 1
-  strategy:
-    type: Recreate
-  image:
-      repository: mysql
-      tag: 5.7
-      pullPolicy: IfNotPresent
-  env: {}
-  resources: 
-    limits:
-      cpu: 500m
-      memory: 1024Mi
-    requests:
-      cpu: 250m
-      memory: 512Mi
+  mysql_exporter:
+    enabled: true
+  mysqlRootPassword: root
+  mysqlUser: provisioner
+  mysqlPassword: provisioner
+  mysqlDatabase: provisioner
+  persistence:
+    enabled: true
+    storageClass: "manual"
+    accessMode: ReadWriteOnce
+    size: 500Mi
+  logger:
+    enabled: false
+    image: snappyflowml/sfagent
+    imageTag: latest
+    imagePullPolicy: Always
+    # resources:
+    #   requests:
+    #     cpu: 250m
+    #     memory: 256Mi
+    #   limits:
+    #     cpu: 500m
+    #     memory: 512Mi
+  logrotate:
+    enabled: false
+    env:
+      LOGROTATE_COMPRESSION: compress
+      # LOGROTATE_INTERVAL: hourly
+      LOGROTATE_COPIES: 3
+      LOGROTATE_SIZE: 5M
+      LOGROTATE_DELAYCOMPRESS: false
+      LOG_FILE_ENDINGS: "log jtl"
+      LOGROTATE_LOGFILE: "/dev/stdout"
+      LOGROTATE_PARAMETERS: "vf"
+      LOG_FILE: "/dev/stdout"
 
 jmeter:
   enabled: true
@@ -143,22 +195,82 @@ jmeter:
       tag: 5.1.1
       pullPolicy: IfNotPresent
   env: {}
-  resources: 
-    limits:
-      cpu: 500m
-      memory: 1024Mi
-    requests:
-      cpu: 250m
-      memory: 512Mi
-
-kafka:
-  replicaCount: 1
-  image:
-      repository: wurstmeister/kafka
+  # resources: 
+  #   limits:
+  #     cpu: 500m
+  #     memory: 1024Mi
+  #   requests:
+  #     cpu: 250m
+  #     memory: 512Mi
+  sfagent:
+    enabled: false
+    image: snappyflowml/sfagent
+    imageTag: latest
+    imagePullPolicy: Always
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  jmx_exporter:
+    enabled: true
+    image:
+      repository: bitnami/jmx-exporter
       tag: latest
       pullPolicy: IfNotPresent
+    port: 5556
+  logrotate:
+    enabled: false
+    image:
+      repository: blacklabelops/logrotate
+      tag: latest
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 256m
+        memory: 512Mi
+    env:
+      LOGROTATE_COMPRESSION: compress
+      LOGROTATE_INTERVAL: hourly
+      LOGROTATE_COPIES: 3
+      LOGROTATE_SIZE: 5M
+      LOGROTATE_DELAYCOMPRESS: false
+      LOG_FILE_ENDINGS: "log jtl"
+      LOGROTATE_LOGFILE: "/dev/stdout"
+      LOGROTATE_PARAMETERS: "vf"
+      LOG_FILE: "/dev/stdout"
+    
+
+
+kafka:
+  replicas: 1
+  image: "mahendra0939/kafka-auditable"
+  imageTag: "latest"
+  imagePullPolicy: "IfNotPresent"
   env: {}
-  resources: {}
+  rbac:
+    enabled: false
+    storageClass: "slow"
+  persistence:
+    enabled: false
+    size: "10Gi"
+    mountPath: "/opt/kafka/data"
+    storageClass: "slow"
+  ## Prometheus Exporters / Metrics
+  ##
+  prometheus:
+    ## Prometheus JMX Exporter: exposes the majority of Kafkas metrics
+    jmx:
+      enabled: true
+    ## Prometheus Kafka Exporter: exposes complimentary metrics to JMX Exporter
+    kafka:
+      enabled: false
+  #resources: {}
     # limits:
     #   cpu: 500m
     #   memory: 1024Mi
@@ -167,13 +279,23 @@ kafka:
     #   memory: 512Mi
 
 zookeeper:
-  replicaCount: 1
-  image:
-      repository: mahendra0939/zookeeper-auditable
-      tag: latest
-      pullPolicy: IfNotPresent
-  env: {}
-  resources: {}
+  ## If true, install the Zookeeper chart alongside Kafka
+  ## ref: https://github.com/kubernetes/charts/tree/master/incubator/zookeeper
+  enabled: true
+
+  servers: 1
+  persistence:
+    enabled: false
+    ## The amount of PV storage allocated to each Zookeeper pod in the statefulset
+    size: "4Gi"
+    storageClass: "slow"
+    mountPath: "/var/lib/zookeeper"
+  # image:
+  #     repository: mahendra0939/zookeeper-auditable
+  #     tag: latest
+  #     pullPolicy: IfNotPresent
+  # env: {}
+  # resources: {}
     # limits:
     #   cpu: 500m
     #   memory: 1024Mi

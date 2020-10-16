@@ -24,6 +24,24 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "mysql.fullname" -}}
+{{- printf "%s-%s" .Release.Name "mysql" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+*/}}
+{{- define "kafka.fullname" -}}
+{{/*- $name := default .Chart.Name .Values.nameOverride - */}}
+{{- printf "%s-%s" .Release.Name "kafka" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "provisioner.chart" -}}

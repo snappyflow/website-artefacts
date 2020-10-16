@@ -22,12 +22,3 @@ data:
     general_log      = 1
     slow-query-log   = 1
     slow-query-log-file = /var/log/mysql/mysql-slow.log
-
----
-# apiVersion: v1
-# kind: ConfigMap
-# metadata:
-#   name: db-config
-# data:
-#   host: mysql
-#   name: provisioner
