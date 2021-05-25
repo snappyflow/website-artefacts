@@ -15,7 +15,7 @@ manager:
   nodePort: 30100
   replicaCount: 1
   image: 
-    repository: snappyflowml/provisionmanager-with-sftrace
+    repository: snappyflowml/provisionmanager
     tag: "1.0"
     pullPolicy: Always
 
