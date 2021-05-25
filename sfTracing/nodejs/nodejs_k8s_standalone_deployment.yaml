@@ -14,25 +14,19 @@ spec:
         - sh
         - -c
         - -x
-        - wget -O /sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
+        - wget -O /opt/sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /opt/sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
         volumeMounts:
-        - mountPath: /sfagent
+        - mountPath: /opt/sfagent
           name: sftrace-agent
       containers:
         - name: sample-nodejs-app
           image: image/nodejs-app:latest
-# <SFTRACE-CONFIG>add the below "command" to start the application from trace agent binary
-          command:
-          - sh
-          - -c
-          - /sfagent/sftrace/sftrace --sfcmd="<original command to start the application>"
-# <SFTRACE-CONFIG>: example: - /sfagent/sftrace/sftrace --sfcmd="node app.js"
           volumeMounts:
             - name: config-file-worker
               mountPath: /config/application.properties
               subPath: application.properties
 # <SFTRACE-CONFIG>add the below volume mount. This is the location where the trace agent is copied through initContainer
-            - mountPath: /sfagent
+            - mountPath: /opt/sfagent
               name: sftrace-agent
 
       ############################### environment variable ###############################
