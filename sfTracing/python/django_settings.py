@@ -44,13 +44,23 @@ INSTALLED_APPS = [
 
 #<SFTRACE-CONFIG> add the below agent specific variable 
 # Replace <service_name> with approariate value. The service_name is used to identify and filter the traces related to an application and should be named appropriately to distinctly identify it.  Service name must only contain characters from the ASCII alphabet, numbers, dashes, underscores and spaces.
-ELASTIC_APM={
-    'SERVICE_NAME':"<serivce_name>",
-    'DEBUG': True,
-    'SERVER_URL': os.getenv( 'SFTRACE_SERVER_URL', None),
-    'GLOBAL_LABELS': os.getenv('SFTRACE_GLOBAL_LABELS', None),
-    'VERIFY_SERVER_CERT': os.getenv('SFTRACE_VERFIY_SERVER_CERT', None),
-}
+try:
+    SFTRACE_CONFIG = json.loads(os.popen('/opt/sfagent/sftrace/sftrace').readlines()[0]) if len(os.popen('/opt/sfagent/sftrace/sftrace').readlines()) > 0 else dict()
+    ELASTIC_APM={
+         'SERVICE_NAME': "python10",
+         'SERVER_URL': SFTRACE_CONFIG.get('SFTRACE_SERVER_URL'),
+         'GLOBAL_LABELS': SFTRACE_CONFIG.get('SFTRACE_GLOBAL_LABELS'),
+         'VERIFY_SERVER_CERT': SFTRACE_CONFIG.get('SFTRACE_VERIFY_SERVER_CERT'),
+         'SPAN_FRAMES_MIN_DURATION': SFTRACE_CONFIG.get('SFTRACE_SPAN_FRAMES_MIN_DURATION'),
+         'STACK_TRACE_LIMIT': SFTRACE_CONFIG.get('SFTRACE_STACK_TRACE_LIMIT'),
+         'CAPTURE_SPAN_STACK_TRACES': SFTRACE_CONFIG.get('SFTRACE_CAPTURE_SPAN_STACK_TRACES'),
+         'DJANGO_TRANSACTION_NAME_FROM_ROUTE': True,
+         'CENTRAL_CONFIG': False,
+         'DEBUG': True,
+    }
+except Exception as error:
+    print("Error while fetching snappyflow tracing configurations", error)
+
 
 #<SFTRACE-CONFIG> add 'elasticapm.contrib.django.middleware.TracingMiddleware' in MIDDLEWARE as below
 MIDDLEWARE = [
