@@ -48,7 +48,7 @@ import os,json
 try:
     SFTRACE_CONFIG = json.loads(os.popen('/opt/sfagent/sftrace/sftrace').readlines()[0]) if len(os.popen('/opt/sfagent/sftrace/sftrace').readlines()) > 0 else dict()
     ELASTIC_APM={
-         'SERVICE_NAME': "python10",
+         'SERVICE_NAME': "<service_name>",
          'SERVER_URL': SFTRACE_CONFIG.get('SFTRACE_SERVER_URL'),
          'GLOBAL_LABELS': SFTRACE_CONFIG.get('SFTRACE_GLOBAL_LABELS'),
          'VERIFY_SERVER_CERT': SFTRACE_CONFIG.get('SFTRACE_VERIFY_SERVER_CERT'),
