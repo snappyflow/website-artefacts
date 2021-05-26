@@ -4,7 +4,7 @@ RUN mkdir /app
 
 #<SFTRACE-CONFIG> Add below 2 lines to copy the sftrace agent binary
 ADD https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz /tmp
-RUN mkdir /sfagent && tar -xvzf /tmp/sftrace-agent.tar.gz -C /sfagent && rm /tmp/sftrace-agent.tar.gz
+RUN mkdir /opt/sfagent && tar -xvzf /tmp/sftrace-agent.tar.gz -C /opt/sfagent && rm /tmp/sftrace-agent.tar.gz && mv -f /opt/sfagent/sftrace/java/sftrace /opt/sfagent/sftrace
 
 #<SFTRACE-CONFIG>Add the below environment variables that will be used by trace agent
 #<SFTRACE-CONFIG> Replace <profile_key> with actual profile key. Profile key can be got from SF-APM UI: Manage-Profiles-Copykey corresponding to your profile
@@ -18,6 +18,5 @@ WORKDIR /app
 RUN pip install -r requirements.txt
 EXPOSE 8000
 
-#<SFTRACE-CONFIG>Modify the CMD as below to start the python application using sftrace binary
-CMD /sfagent/sftrace/sftrace --sfcmd="<original command>"
-#<SFTRACE-CONFIG> example: CMD /sfagent/sftrace/sftrace --sfcmd="gunicorn kafka_app.wsgi:application"
+#Python application start command
+CMD gunicorn kafka_app.wsgi:application
