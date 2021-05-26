@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 #<SFTRACE-CONFIG> add the below agent specific variable 
 # Replace <service_name> with approariate value. The service_name is used to identify and filter the traces related to an application and should be named appropriately to distinctly identify it.  Service name must only contain characters from the ASCII alphabet, numbers, dashes, underscores and spaces.
+import os,json
 try:
     SFTRACE_CONFIG = json.loads(os.popen('/opt/sfagent/sftrace/sftrace').readlines()[0]) if len(os.popen('/opt/sfagent/sftrace/sftrace').readlines()) > 0 else dict()
     ELASTIC_APM={
