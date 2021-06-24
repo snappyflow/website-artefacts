@@ -14,7 +14,7 @@ spec:
         - sh
         - -c
         - -x
-        - wget -O /opt/sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /opt/sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz
+        - wget -O /opt/sfagent/sftrace-agent.tar.gz https://github.com/snappyflow/apm-agent/releases/download/latest/sftrace-agent.tar.gz && cd /opt/sfagent && tar -xvzf sftrace-agent.tar.gz && rm sftrace-agent.tar.gz && mv -f /opt/sfagent/sftrace/java/sftrace /opt/sfagent/sftrace
         volumeMounts:
         - mountPath: /opt/sfagent
           name: sftrace-agent
