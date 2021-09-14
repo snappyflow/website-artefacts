@@ -8,6 +8,8 @@ metadata:
     app.kubernetes.io/instance: postgresql-1600344618
     app.kubernetes.io/version: "9.6"
     app.kubernetes.io/managed-by: Helm
+    snappyflow/projectName: sample-project
+    snappyflow/appName: sample-app
 spec:
   replicas: 1
   selector:
