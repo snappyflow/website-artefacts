@@ -8,6 +8,8 @@ metadata:
     app.kubernetes.io/instance: postgresql-1600344618
     app.kubernetes.io/version: "9.6"
     app.kubernetes.io/managed-by: Helm
+    snappyflow/appname: <appName>
+    snappyflow/projectname: <projectName>
 spec:
   replicas: 1
   selector:
@@ -20,6 +22,9 @@ spec:
       labels:
         app.kubernetes.io/name: postgresql
         app.kubernetes.io/instance: postgresql-1600344618
+        snappyflow/component: postgresql
+        snappyflow/appname: <appName>
+        snappyflow/projectname: <projectName>
     spec:
       serviceAccountName: default
       securityContext:
