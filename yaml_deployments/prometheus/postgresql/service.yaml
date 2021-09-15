@@ -8,6 +8,8 @@ metadata:
     app.kubernetes.io/instance: postgresql-1600344618
     app.kubernetes.io/version: "9.6"
     app.kubernetes.io/managed-by: Helm
+    snappyflow/appname: <app_name>
+    snappyflow/projectname: <project_name> 
 spec:
   type: ClusterIP
   ports:
