@@ -25,6 +25,9 @@ spec:
         snappyflow/component: postgresql
         snappyflow/appname: <appName>
         snappyflow/projectname: <projectName>
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
     spec:
       serviceAccountName: default
       securityContext:
